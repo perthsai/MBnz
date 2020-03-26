@@ -1,0 +1,91 @@
+<aura:component controller="MBFS_RTMContractSegmentationController" 
+                implements="flexipage:availableForAllPageTypes">
+    <ltng:require styles="/resource/SLDS/assets/styles/salesforce-lightning-design-system.min.css"/>
+    
+    <aura:attribute name="WrapperData"  type="MBFS_MarkerInterface" 
+                    description="Default Data"/>
+    
+    <aura:attribute type="String" 
+                    name="monthWeekFilterName" 
+                    default="None" 
+                    description="Default month week"/> 
+    <aura:attribute type="String" 
+                    name="campaignName" 
+                    default="None" 
+                    description="Default campaign"/> 
+    <aura:attribute type="String" 
+                    name="dateFilter" 
+                    default="Today_OverDue" 
+                    description="Default overdue"/>
+    <aura:attribute type="Integer" 
+                    name="defaultCount" 
+                    default="25" 
+                    description="Default records"/>   
+    <aura:attribute type="String" 
+                    name="sortField" 
+                    default="MBFS_Last_Activity_Due_Date__c" 
+                    description="Default Sorting"/>
+    <aura:attribute type="Boolean" 
+                    name="sortAsc" 
+                    default="false" 
+                    description="Default Asc or dsc soting"/> 
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    
+    <aura:handler name="assignToEvt" event="c:MBFS_RTM_NewTaskRefresh" 
+                  action="{!c.handleComponentEvent}"/>
+    
+    <style>        
+         .oneAnchorHeader
+          {
+             display:none !important;
+          }       
+          .slds-brand-band:before
+          {
+            background-image:none;
+          }
+          .slds-brand-band:after
+          {
+            background-image:none;
+          } 
+    </style>
+    
+     <div aura:id="RTMSegspinner" id="RTMSegspinner" style="display:none;">
+        <lightning:spinner variant="brand" size="large"/>
+     </div>
+    
+    <div class="page-wrapper slds-grid slds-wrap">
+        
+        <div class="slds-size_1-of-3">
+            <div class="slds-box slds-box_x-small slds-text-align_center slds-m-around_x-small">
+                <lightning:select name="selectItem" label="Campaign" onchange="{!c.onCampaignFilterChange}" value="{!v.campaignName}">
+                    <option value="None">None</option>
+                    <option value="All">All</option>
+                    <aura:iteration items="{!v.WrapperData.campaignFilterData}" var="item" indexVar="index"> 
+                        <option value="{!item.campaignId}">{!item.campaignName}</option>                    
+                    </aura:iteration>                    
+                </lightning:select>  
+                
+            </div>
+        </div>
+        <div class="slds-size_1-of-3">
+            <div class="slds-box slds-box_x-small slds-text-align_center slds-m-around_x-small">
+                <lightning:select name="selectItem" label="Task Duration" onchange="{!c.onDateFilterChange}" value="{!v.dateFilter}">  
+                    <aura:iteration items="{!v.WrapperData.taskDurationDataData}" var="item" indexVar="index"> 
+                        <option value="{!item.taskApiName}">{!item.taskLabel}</option>                    
+                    </aura:iteration>                    
+                </lightning:select>  
+                
+            </div>
+        </div>
+        <div class="slds-size_1-of-3">
+            
+        </div>
+        <div class="slds-size_3-of-3">
+            <div class="slds-box slds-box_x-small slds-text-align_center slds-m-around_x-small">
+              <c:MBFS_RTMListView aura:id="MBFS_RTMListView" defaultCount="{!v.defaultCount}"/>
+            </div>
+        </div>
+    </div>
+    
+</aura:component>

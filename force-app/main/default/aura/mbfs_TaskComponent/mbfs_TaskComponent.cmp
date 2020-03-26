@@ -1,0 +1,95 @@
+<aura:component controller="MBFS_TaskComponentController" 
+                implements="flexipage:availableForAllPageTypes,force:appHostable,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickActionWithoutHeader" 
+                access="Global" >
+    
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <aura:attribute name="filterCond" type="String" default="All Open"/>
+    <aura:attribute name="Task" type="Task[]"/>
+    <aura:method name="showTaskMethod" action="{!c.showTask}"/>
+    
+    <div class="slds-page-header" role="banner">
+        <div class="slds-grid">
+            <div class="slds-col slds-has-flexi-truncate">
+                <div class="slds-media slds-no-space slds-grow">
+                    <div class="slds-media__body">
+                        <h1 class="slds-page-header__title 
+                                   slds-m-right--small 
+                                   slds-align-middle slds-truncate" 
+                            title="My Tasks">My Tasks</h1>
+                    </div>
+                </div>
+            </div>
+            <div class="slds-col slds-no-flex slds-grid slds-align-top">
+                <ui:inputSelect value="{!v.filterCond}" change="{!c.showTask}">
+                    <ui:inputSelectOption text="Overdue" label="Overdue"/>
+                    <ui:inputSelectOption text="Today" label="Today"/>
+                    <ui:inputSelectOption text="Today + Overdue" label="Today + Overdue"/>
+                    <ui:inputSelectOption text="Tomorrow" label="Tomorrow"/>
+                    <ui:inputSelectOption text="Next 7 Days" label="Next 7 Days"/>
+                    
+                    <ui:inputSelectOption text="This Month" label="This Month"/>
+                    <ui:inputSelectOption text="All Open" label="All Open"/>
+                </ui:inputSelect>
+            </div>
+        </div>
+    </div>
+    <div style="overflow:scroll;height:300px">
+        <table class="slds-table slds-table--bordered slds-table--cell-buffer">
+            <thead>
+                <tr class="slds-text-title--caps">
+                    <th scope="col">
+                        <div class="slds-truncate" title="Subject">Subject</div>
+                    </th>
+                    <th scope="col">
+                        <div class="slds-truncate" title="Status">Status</div>
+                    </th>
+                    <th scope="col">
+                        <div class="slds-truncate" title="Due Date">Due Date</div>
+                    </th>
+                   	<th scope="col">
+                        <div class="slds-truncate" title="Related Name">Related Name</div>
+                    </th>
+                   
+                </tr>
+            </thead>
+            <tbody>
+                <aura:iteration items="{!v.Task}" var="objTask">
+                    <tr>
+                        <td data-label="Close Date" class="slds-cell-wrap">
+                            <a href="javascript:void(0);">
+                                <span onclick="{!c.gotoURL}" 
+                                      id="{!objTask.Id}">{!objTask.Subject}</span></a>
+                        </td>
+                        <td data-label="Account Name">
+                            <div class="slds-truncate" 
+                                 title="{!objTask.Status}">{!objTask.Status}</div>
+                        </td>
+                        <td scope="row" data-label="Opportunity Name">
+                            <div class="slds-truncate" 
+                                 title="{!objTask.ActivityDate}">{!objTask.ActivityDate}</div>
+                        </td>
+                        <td data-label="Prospecting">
+                            <div class="slds-truncate" title="{!objTask.Who.Name}">
+                                <a href="javascript:void(0);">
+                                <span onclick="{!c.gotoURL}" 
+                                      id="{!objTask.WhoId}">{!objTask.Who.Name}</span>
+                                </a>
+                            </div>
+                        </td>
+                        <td data-label="Confidence">
+                            <div class="slds-truncate" title="{!objTask.What.Name}">
+                                <a href="javascript:void(0);">
+                                    <span onclick="{!c.gotoURL}" id="{!objTask.WhatId}">
+                                        {!objTask.What.Name}
+                                    </span> 
+                                </a>
+                            </div>
+                            
+                        </td>
+                    </tr>
+                </aura:iteration>
+            </tbody>
+        </table>
+    </div>
+</aura:component>

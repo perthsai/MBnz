@@ -1,0 +1,80 @@
+.THIS .button_example,
+.THIS .button_example:focus,
+.THIS .button_example:active{
+    background: #535152;
+    color: #fff;
+    border: 0;
+    font-size: 14px;
+    padding: 6px 24px;
+    position: relative;
+    border-radius: 2rem;
+    box-shadow: none;
+    outline: none;
+}
+
+.THIS .slds-select{
+    background: #f2f2f2;  
+}
+.THIS .slds-form-element{
+    text-align : left ;
+}
+.THIS .slds-form-element__label{
+    color: #000000;
+}
+.THIS.page-wrapper{
+        align-items: stretch;
+}
+
+.THIS .calendar_btns button{
+    background: #535152;
+    color: #fff;
+    border: 0;
+    font-size: 14px;
+    padding: 6px 18px;
+    position: relative;
+    flex-grow: 1;
+}
+.THIS .calendar_btns button.Active{
+    background: #e13857;
+    
+}
+.THIS .calendar_btns button.Active:before{
+    content:"";
+    position: absolute;
+    bottom: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: block;
+    border: 10px solid #e13857;
+    border-left-color: transparent;
+    border-bottom-color: transparent;
+    border-right-color: transparent;
+}
+.THIS .calendar_btns button:first-child{
+    border-radius: 2rem 0 0 2rem;
+}
+.THIS .calendar_btns button:last-child{
+    border-radius: 0 2rem 2rem 0;
+}
+.THIS .calendar_btns button:focus,
+.THIS .calendar_btns button:active{
+    box-shadow: none;
+}
+@media (min-width: 1024px){
+    .THIS.page-wrapper .column_1{
+        width: 65%
+    }
+    .THIS.page-wrapper .column_2{
+        width: 35%;        
+        box-shadow: inset 7px 0 9px -7px rgba(0,0,0,0.4);        
+    }
+}
+.THIS .picklist-custom [class*="slds"]{
+    flex-grow: 1;
+}
+.THIS .canvas-space{
+    padding-top: 0;
+    margin-top: 0;
+    padding-bottom: 0;
+    margin-bottom: 0;
+}

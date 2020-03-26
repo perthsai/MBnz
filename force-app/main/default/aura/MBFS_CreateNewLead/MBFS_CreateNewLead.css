@@ -1,0 +1,8 @@
+.THIS .slds-modal__footer{
+    border-top: 0px solid #ffffff;
+    background-color: #fdfdfd;
+    box-shadow: 0 0px 0px 0 rgba(0,0,0,0);
+}
+.THIS .slds-form-element__label{
+    color:#000000;
+}

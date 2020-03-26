@@ -1,0 +1,21 @@
+.THIS .slds-spinner_container {
+    position:fixed;
+    top:0px;
+    bottom:0px;
+    width:100%; 
+    overflow-y:auto;
+}
+.THIS .slds-form-element__label{
+     display:none;
+}
+.THIS .RTMIntention{
+    max-width: 50%;
+    width:50%;
+}
+.THIS .CustomerIntention{
+    max-width: 100%;
+    width:100%;
+}
+.THIS .slds-select{
+    background-color: white;
+}

@@ -1,0 +1,69 @@
+<aura:component controller="MBFS_CampaignContractSegmentController" 
+                implements="flexipage:availableForAllPageTypes,force:appHostable,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickActionWithoutHeader" 
+                access="Global">
+    <ltng:require styles="/resource/SLDS/assets/styles/salesforce-lightning-design-system.min.css"/>
+    <aura:attribute name="recordId" type="String"/>
+
+    
+    <aura:attribute name="WrapperData"  type="MBFS_MarkerInterface"/>
+    
+    <aura:attribute type="String" name="monthWeekFilterName" default="None"/> 
+    <aura:attribute type="Integer" name="defaultCount" default="25"/>   
+    <aura:attribute type="String" name="sortField" default="CreatedDate"/>
+    <aura:attribute type="Boolean" name="sortAsc" default="false"/> 
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <aura:handler name="campaignEvt" event="c:MBFS_CammpaignRefresh" action="{!c.handleComponentEvent}"/>
+    
+    <aura:attribute type="Boolean" name="openToast" default="false"/>
+    <aura:attribute type="String" name="message" default=""/>
+    <aura:attribute type="Boolean" name="isError" default="false"/>
+    <aura:attribute type="Boolean" name="isSuccess" default="false"/>
+    
+   <style>
+        
+        .oneAnchorHeader
+        {
+        display:none !important;
+        }
+        
+        .slds-brand-band:before
+        {
+        background-image:none;
+        }
+        .slds-brand-band:after
+        {
+        background-image:none;
+        } 
+        
+        .modal-container{
+           width: 90%;
+           max-width: 100% !important;
+        }
+       
+    </style>
+    
+    <div aura:id="RTHSegspinner" id="RTHSegspinner" style="display:none;">
+        <lightning:spinner variant="brand" size="large"/>
+    </div>
+    
+    <div class="page-wrapper slds-grid slds-wrap">
+       
+        <div class="slds-size_3-of-3">
+            <div class="slds-box slds-box_x-small slds-text-align_center slds-m-around_x-small">
+                <c:MBFS_CampaignListView aura:id="MBFS_CampaignListView" 
+                                         defaultCount="{!v.defaultCount}" 
+                                         campaignId="{!v.recordId}" 
+                                         openToast="{!v.openToast}" 
+                                         message="{!v.message}" 
+                                         isSuccess="{!v.isSuccess}" 
+                                         isError="{!v.isError}"/>
+            </div>
+        </div>
+        
+        <c:MBFS_CustomToast open="{!v.openToast}" 
+                            Message="{!v.message}" 
+                            ShowSaveMeassage="{!v.isSuccess}" 
+                            ShowErrorMessage="{!v.isError}"/>
+    </div>
+</aura:component>

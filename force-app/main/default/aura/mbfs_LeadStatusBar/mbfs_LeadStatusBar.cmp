@@ -1,0 +1,131 @@
+<aura:component controller="MBFS_LeadStatusBarController"  
+                implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickAction" 
+                access="global">
+    
+    
+    <ltng:require styles="/resource/StatusBar/main.css"/>
+    
+    
+    
+    <aura:attribute name="leadStatusValues"
+                    type="String[]"/>
+    <aura:attribute name="objLead" 
+                    type="Lead"/>
+    <aura:attribute name="recordId" 
+                    type="Id" />  
+    <aura:attribute name="objResult" 
+                    type="MBFS_MarkerInterface"/>
+    <aura:attribute name="currentStatus" 
+                    type="string"/>
+    <aura:attribute name="OpenSoldPopUp" 
+                    type="boolean"
+                    default="false"/>
+    <aura:attribute name="errorMsg" 
+                    type="string"/>                 
+    
+    
+    <aura:dependency resource="force:showToast" type="EVENT"/>
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    
+    
+    <div class="cstm-process"> 
+        <ul>    
+            <aura:iteration items="{!v.leadStatusValues}" 
+                            var="option" 
+                            indexVar="itemCount">
+                <li class="{!option.statusStage}" onclick="{!c.updateStatus}" 
+                    id="{!option.statusName}">
+                    <a href="javascript:void(0)">{!option.statusName}</a>
+                </li>
+            </aura:iteration>
+        </ul>    
+    </div>
+    
+    
+    <aura:if isTrue="{!v.OpenSoldPopUp}">  
+        <div role="dialog"  aura:id="Modalbox" 
+             aria-labelledby="header43" class="slds-modal slds-fade-in-open" 
+             style="overflow: auto;">
+            <div class="slds-modal__container" style="display: block;">
+                <div class="slds-modal__header header">
+                    <button class="slds-button slds-button--icon-inverse slds-modal__close" 
+                            onclick="{!c.closeModal}">
+                        <span>
+                            <lightning:icon iconName="utility:close" size="x-small" 
+                                            alternativeText="Close" variant="inverse"/>
+                        </span>                 
+                    </button>
+                    <h1>Sold Status</h1>
+                </div>   
+                <div class="slds-modal__content slds-p-around--medium" >
+                    <article class="slds-card" 
+                             style="overflow-y:auto;background-color: #f6f6f6;overflow:visible;">
+                        <div class="slds-card__body">
+                            <center>
+                                <div class="slds-grid slds-wrap">
+                                    <aura:If isTrue="{!v.currentStatus == 'Delivered'}">
+                                        <div class="slds-size_2-of-4">
+                                            <div class="slds-box_x-small  slds-m-around_x-small">
+                                                <span class="required" style="color:red">*</span>
+                                                <span class="">Sold Items</span>
+                                            </div>
+                                        </div> 
+                                        <div class="slds-size_2-of-4">
+                                            <div class="slds-box_x-small  slds-m-around_x-small">
+                                                <ui:inputSelect class="slds-input borderOnePx" 
+                                                                aura:id="soldItems" multiple="true"  
+                                                                value="{!v.objLead.MBFS_Sold_Items__c}" 
+                                                                change="{!c.onPicklistChange}">	 
+                                                    
+                                                    
+                                                    <aura:iteration items="{!v.objResult.lstSoldItems}" var="item"> 
+                                                        <ui:inputSelectOption text="{!item}" label="{!item}"/>
+                                                    </aura:iteration>
+                                                </ui:inputSelect> 
+                                                <aura:If isTrue="{!v.errorMsg &amp;&amp; v.errorMsg != '' &amp;&amp; 
+                                                                 (!v.objLead.MBFS_Sold_Items__c ||v.objLead.MBFS_Sold_Items__c == '')}">
+                                                    <em class="errorMsg">{!v.errorMsg}</em>
+                                                </aura:If>  
+                                            </div>
+                                        </div> 
+                                    </aura:If>
+                                    <aura:If isTrue="{!v.currentStatus == 'Sold'}">	
+                                        <div class="slds-size_2-of-4">
+                                            <div class="slds-box_x-small  slds-m-around_x-small">
+                                                <span class="required" style="color:red">*</span>
+                                                <span class="">Expected Delivery Date</span>
+                                            </div>
+                                        </div> 
+                                        <div class="slds-size_2-of-4">
+                                            <div class="slds-box_x-small  slds-m-around_x-small">
+                                                <ui:inputDate class="slds-input" 
+                                                              aura:id="expectedDelivaryDate" 
+                                                              label="" 
+                                                              value="{!v.objLead.MBFS_Expected_Delivery_Date__c}"  
+                                                              displayDatePicker="true" required="true"/>
+                                                <aura:If isTrue="{!v.errorMsg &amp;&amp; v.errorMsg != '' &amp;&amp; 
+                                                                 (!v.objLead.MBFS_Expected_Delivery_Date__c ||
+                                                                 v.objLead.MBFS_Expected_Delivery_Date__c == '')}">
+                                                    <em class="errorMsg">{!v.errorMsg}</em>
+                                                </aura:If>
+                                            </div>
+                                        </div>
+                                    </aura:If>	
+                                </div>  
+                                
+                                <br/>  <br/> <br/>
+                                <button class="slds-button slds-button--brand" 
+                                        onclick="{!c.onConfirmation}">Save</button>
+                                <button class="slds-button slds-button--neutral" 
+                                        onclick="{!c.closeModal}">Cancel</button>
+                            </center> 
+                        </div>
+                    </article>    
+                </div>
+            </div>	  
+        </div>
+        <div class="slds-backdrop slds-backdrop--open" aura:id="MB-Back"></div>	
+    </aura:if>
+    
+    
+</aura:component>

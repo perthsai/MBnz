@@ -1,0 +1,175 @@
+.THIS .agreement-pagination{
+    display : block ;
+}
+.THIS .agreement-pagination .assign-to{
+    order: 1;
+    border-radius: 2em !important;
+    padding: 6px 24px;
+    min-width : 120px ;
+    width : 100% ;
+    text-align : center ;
+}
+.THIS .agreement-pagination .paginationBtns{
+    order: 0;
+	flex:1;
+    text-align:center;    
+    display: flex;
+}
+.THIS .agreement-pagination .paginationBtns button{
+ 	flex-grow: 1;
+}
+.THIS .align-picklist{
+    margin-right: 40px;
+}
+
+
+
+
+.THIS .agreement-pagination button{
+    background: #535152;
+    color: #fff;
+    border: 0;
+    font-size: 14px;
+    padding: 6px 15px;
+    position: relative;
+    margin-top: 15px;
+}
+.THIS .agreement-pagination button:hover{
+    background: #e13857;    
+}
+.THIS .agreement-pagination button:focus,
+.THIS .agreement-pagination button:active{
+    box-shadow: none;
+}
+.THIS .agreement-pagination button:first-child{
+      border-radius: 2rem 0 0 2rem;
+}
+.THIS .agreement-pagination button:last-child{
+      border-radius: 0 2rem 2rem 0;
+}
+.THIS.overflow-auto{
+    overflow:auto ; 
+}
+.THIS .col_1{
+        order : 3 ;
+        /*width : 100%;*/
+    }
+    .THIS .col_2{
+        order : 1 ;
+        padding-top : 28px;
+        padding-left : 0px;
+        float : left;
+        min-width:120px;
+    }
+    .THIS .col_3{
+        order : 4 ;
+        width : 100%;
+    }
+    .THIS .col_4{
+        order : 2 ;
+        float : right;
+    }
+@media (min-width: 1024px){
+   .THIS .agreement-pagination{
+    flex-direction: row;
+     display : flex;
+} 
+    .THIS .agreement-pagination .assign-to{
+    order: 0;
+        width:inherit;
+        min-width: max-content;
+        margin-right: 10px;   
+}
+    
+.THIS .slctlbl{
+        position:relative;
+        left:-90px;
+    }
+
+    .THIS .col_1{
+        order : 1 ;
+        /*width : auto ;*/
+    }
+    .THIS .col_2{
+        order : 2 ;
+        padding-left : 20px;
+        
+    }
+    .THIS .col_3{
+        order : 3 ;
+        width:inherit;
+       
+    }
+    .THIS .col_4{
+        order : 4 ;
+    }
+    .THIS .nestable{
+        margin:0px;
+        padding:0px;
+    }
+    .THIS .nestable table{
+        height: 380px;
+        overflow-y: auto;
+        max-height: 600px;
+        position: relative;
+        display: block;
+    }
+.THIS .agreement-pagination .paginationBtns{
+	order: 1;  
+    display: inline;    
+}
+    
+    .THIS .mainTable{
+overflow-x:hidden;
+}
+.THIS .header{
+position:relative;
+}
+.THIS .header table,
+.THIS .tblbody table{
+    border: none;
+    padding: 0px;
+    border-radius: 0px;
+}
+
+.THIS .tblbody{
+    width: 100%;
+    height: 400px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    display: inline-block;
+}
+.THIS .tblbody tbody td,
+.THIS .header thead th{
+	max-width:160px;
+    min-width:160px;
+}
+    .THIS .tblbody tbody td:first-child,
+.THIS .header thead th:first-child{
+	max-width:50px;
+    min-width:50px;
+    }
+
+       
+}
+.THIS .record-count{ 
+    text-align:right;    
+    display: inline-block;
+    min-width:80px;
+}
+.THIS .slds-spinner_container {
+   position:fixed;
+   top:0px;
+   bottom:0px;
+   width:100%; 
+   overflow-y:auto;
+}
+.THIS.canvas-heading{
+    text-align: center;
+    margin: 0 20px;
+    padding-bottom: 5px;
+    padding-top: 5px;
+}
+.THIS .save-data{
+     margin-left: -161px;
+}

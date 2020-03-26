@@ -1,0 +1,40 @@
+<aura:component implements="flexipage:availableForAllPageTypes,force:appHostable,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickActionWithoutHeader" 
+                access="Global" controller="MBFS_PortalChangeOwnerCtrl">
+    
+    
+    <aura:attribute name="recordId" type="String" />
+    <aura:handler name="init" value="{!this}" action="{!c.initCall}"/>
+    <aura:attribute name="UserIdToName" type="MBFS_MarkerInterface"/>    
+    
+    <aura:attribute type="String" name="SelectedUser"/>
+    
+    
+    <div aura:id="PortalChanegOwnerspinner" id="PortalChanegOwnerspinner" style="display:none;">
+        <lightning:spinner variant="brand" size="large"/>
+    </div>
+  
+    
+    <fieldset class="slds-form-element">                                       
+        <div class="slds-form-element__group">                                            
+            <div class="slds-form-element__row">
+                
+                <div class="slds-form-element">
+                    <lightning:select name="selectItem" label="Change Owner" value="{!v.SelectedUser}" required="true">                       
+                        <aura:iteration items="{!v.UserIdToName}" var="item" indexVar="index"> 
+                            <option value="{!item.userId}">{!item.userName}</option>                    
+                        </aura:iteration>                     
+                    </lightning:select> 
+                </div>
+            </div>                                           
+        </div>
+    </fieldset> 
+    
+    <div class="slds-modal__footer">
+       
+        
+        <button class="slds-button slds-button--brand" 
+                onclick="{!c.onChangeOwnerSubmit}">Save</button>
+        <button class="slds-button slds-button--neutral" 
+                onclick="{!c.hideModal}">Cancel</button>
+    </div>
+</aura:component>

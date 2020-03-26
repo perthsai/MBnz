@@ -1,0 +1,15 @@
+.THIS  .slds-icon--small{
+    width: 1.5rem!important;
+    height: 1.5rem!important;
+}
+
+@media (max-width:767px){
+    .THIS .res_mobile_modal{
+        min-width:96%!important;
+    }
+}
+
+.THIS.DisplayNone
+{
+    display: none;
+}

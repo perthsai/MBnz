@@ -1,0 +1,48 @@
+<aura:component >
+    <ltng:require styles="/resource/SLDS/assets/styles/salesforce-lightning-design-system.min.css"/> 
+    <aura:attribute name="open" type="Boolean" default="false" />
+    <aura:attribute name="Message" type="String" default="" />
+    <aura:attribute name="ShowSaveMeassage" type="boolean" default="false" />
+    <aura:attribute name="ShowErrorMessage" type="boolean" default="false" /> 
+    <aura:handler name="change" value="{!v.ShowSaveMeassage}" action="{!c.OnInitCloseTost}"/>
+    <aura:handler name="change" value="{!v.ShowErrorMessage}" action="{!c.OnInitCloseTost}"/>
+    
+    <aura:if isTrue="{!v.ShowSaveMeassage}">
+        <div class="{!'slds-notify_container '+ (v.open?'slds-show':'slds-hide')}">   
+            <div class="slds-notify slds-notify--toast slds-theme--success res_mobile_modal" role="alert">
+                <span class="slds-assistive-text">Success</span>
+                <button class="slds-button slds-notify__close slds-button--icon-inverse" title="Close" onclick="{!c.closeMessage}">
+                    X
+                    <span class="slds-assistive-text">Close</span>
+                </button>
+                <div class="slds-notify__content slds-grid">
+                    <lightning:icon iconName="action:check" size="xx-small"/>
+
+                   
+                    <div class="slds-col slds-align-middle">
+                        <h2 class="slds-text-heading--small ">{!v.Message}</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    </aura:if>
+    <aura:if isTrue="{!v.ShowErrorMessage}">
+        <div class="{!'slds-notify_container '+ (v.open?'slds-show':'slds-hide')}">
+            <div class="slds-notify_container">
+                <div class="slds-notify slds-notify--toast slds-theme--error res_mobile_modal" role="alert">
+                    <button class="slds-button slds-notify__close slds-button--icon-inverse" title="Close" onclick="{!c.closeMessage}">
+                        X
+                        <span class="slds-assistive-text">Close</span>
+                    </button>
+                    <span class="slds-assistive-text">Error</span>
+                    <h2>
+                        <lightning:icon iconName="utility :error" size="xx-small"/>
+                        {!v.Message}
+                    </h2>
+                </div>
+            </div>  
+        </div>
+        
+    </aura:if>    
+</aura:component>

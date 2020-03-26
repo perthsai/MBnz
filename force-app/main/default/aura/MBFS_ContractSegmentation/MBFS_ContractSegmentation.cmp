@@ -1,0 +1,168 @@
+<aura:component controller="MBFS_ContractSegmentationController"
+                implements="flexipage:availableForAllPageTypes">
+    <ltng:require styles="/resource/SLDS/assets/styles/salesforce-lightning-design-system.min.css"/>
+    <ltng:require scripts="{!$Resource.chartjs}" afterScriptsLoaded="{!c.doInit}"/>
+    
+    <aura:attribute name="globalFilter"  
+                    type="String" 
+                    default="MBSF_CAMPAIGN" 
+                    description="Default tab value"/>
+    <aura:attribute name="WrapperData"  
+                    type="MBFS_MarkerInterface" 
+                    description="Data for all the component"/>
+    
+   
+    <aura:attribute type="String" 
+                    name="campaignName" 
+                    default="All" 
+                    description="Default campaign value"/> 
+    <aura:attribute type="String" 
+                    name="assigneeName" 
+                    default="All" 
+                    description="Default assignee value"/> 
+    <aura:attribute type="String" 
+                    name="agilityName" 
+                    default="All" 
+                    description="Default agility value"/> 
+    <aura:attribute type="String" 
+                    name="residualValue" 
+                    default="All" 
+                    description="Default resudual value"/>
+    <aura:attribute type="String"
+                    name="vehicleMakeInterest"
+                    default="All"
+                    description="Default vehicle make interest value"/>
+    <aura:attribute type="Integer" 
+                    name="defaultCount" 
+                    default="25" 
+                    description="Default count of records on a page"/>
+    
+    <aura:attribute type="String" 
+                    name="sortField" 
+                    default="CreatedDate" 
+                    description="Default sorting field"/>
+    <aura:attribute type="Boolean" 
+                    name="sortAsc" 
+                    default="true" 
+                    description="Default sorting is Asc or Dsc"/>   
+    
+    <aura:handler name="assignToEvt" 
+                  event="c:MBFS_AssignToEvt" 
+                  action="{!c.handleComponentEvent}" 
+                  description="Event use to refresh the view"/>
+    
+    <style>         
+         .oneAnchorHeader
+          {
+             display:none !important;
+          }        
+          .slds-brand-band:before
+          {
+            background-image:none;
+          }
+          .slds-brand-band:after
+          {
+            background-image:none;
+          } 
+    </style>
+    
+    <div aura:id="RTHSegspinner" id="RTHSegspinner" style="display:none;">
+        <lightning:spinner variant="brand" size="large"/>
+    </div>
+    
+    <div class="page-wrapper slds-grid slds-wrap">
+        <div class="slds-medium-size_1-of-2 column_1"> 
+            <div class="slds-size_2-of-2 calendar_btns">
+                <div class="slds-box_x-small slds-text-align_center slds-m-around_x-small">
+                    <div class="slds-button-group" role="group">
+                        
+                        <button class="slds-button slds-button--neutral" aura:id="MBSF_CAMPAIGN" value="MBSF_CAMPAIGN" onclick="{!c.onCampaignClick}">Campaign</button>
+                        <button class="slds-button slds-button--neutral" aura:id="MBSF_LEAD" value="MBSF_LEAD" onclick="{!c.onLeadclick}">Web Leads</button>
+                    </div>
+                </div>
+            </div>
+            <aura:if isTrue="{!or(v.globalFilter == 'MBSF_CAMPAIGN', v.globalFilter == 'MBSF_MONTH')}">
+                
+                <div class="">
+                    <div class="slds-box_x-small slds-text-align_center slds-m-around_xx-small">
+                        
+                        <div class="slds-grid slds-wrap picklist-custom">
+                            
+                            <div class="slds-medium-size_1-of-5">
+                                <div class="slds-box_x-small slds-m-around_xx-small">
+                                    
+                                     <lightning:select name="selectItem" label="Campaign" onchange="{!c.onCampaignFilterChange}" value="{!v.campaignName}">
+                                            <option value="All">All</option>  
+                                            <aura:iteration items="{!v.WrapperData.campaignFilterData}" var="item" indexVar="index"> 
+                                                <option value="{!item.campaignId}">{!item.campaignName}</option>                    
+                                            </aura:iteration>                    
+                                      </lightning:select>     
+                                                                        
+                                </div>
+                            </div>
+                            
+                            <div class="slds-medium-size_1-of-5">                          
+                                <div class="slds-box_x-small slds-m-around_xx-small">                               
+                                    <lightning:select name="selectItem" label="Assignee" onchange="{!c.onAssigneeChange}" value="{!v.assigneeName}">
+                                        <option value="All">All</option>
+                                        <option value="NOT_ASSIGNED">Not Assigned</option>  
+                                        <aura:iteration items="{!v.WrapperData.assigneeData}" var="item" indexVar="index"> 
+                                            <option value="{!item.userId}">{!item.userName}</option>                    
+                                        </aura:iteration> 
+                                    </lightning:select>     
+                                </div>
+                            </div>
+                            <div class="slds-medium-size_1-of-5">
+                                <div class="slds-box_x-small  slds-m-around_xx-small">
+                                    <lightning:select name="selectItem" label="Agility" onchange="{!c.onAgilityChange}" value="{!v.agilityName}">
+                                        <option value="All">All</option>
+                                        <option value="None">Non-Agility</option>
+                                        <aura:iteration items="{!v.WrapperData.agilityData}" var="item" indexVar="index"> 
+                                            <option value="{!item.columnApiName}">{!item.columnLabel}</option>                    
+                                        </aura:iteration>                    
+                                    </lightning:select>    
+                                </div>
+                            </div>
+                            
+                            <div class="slds-medium-size_1-of-5">
+                                <div class="slds-box_x-small  slds-m-around_xx-small">
+                                    <lightning:select name="selectItem" label="Residual" onchange="{!c.onResidualChange}" value="{!v.residualValue}">
+                                        <option value="All">All</option>  
+                                        <option value="ZERO">Zero</option>
+                                        <option value="GREATER_ZERO">Greater than Zero</option>
+                                    </lightning:select>    
+                                </div>
+                            </div>
+                            
+                            <div class="slds-medium-size_1-of-5">
+                                <div class="slds-box_x-small  slds-m-around_xx-small">
+                                    <lightning:select name="selectItem" label="Vehicle Make" onchange="{!c.onVehicleMakeInterestChange}" value="{!v.vehicleMakeInterest}">
+                                            <option value="All">All</option>
+                                            <option value="Mercedes">Mercedes</option>
+                                            <option value="Non_Mercedes">Non Mercedes </option>
+                                     </lightning:select>   
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                        </div>
+
+            </aura:if>
+        </div>
+        
+        <aura:if isTrue="{!or(v.globalFilter == 'MBSF_CAMPAIGN', v.globalFilter == 'MBSF_MONTH')}">
+            <div class="slds-medium-size_1-of-2 column_2">
+                <div class="slds-box_x-small slds-text-align_center slds-m-around_x-small canvas-space"> 
+                    <c:MBSF_SummaryChart aura:id="MBSF_SummaryChart" />
+                </div>
+            </div>
+        </aura:if>
+        <div  class="slds-size_1-of-1">
+            <div class="slds-box_x-small slds-text-align_left slds-m-around_x-small canvas-space" >
+                <c:MBFS_ListView aura:id="MBFS_ListView" defaultCount="{!v.defaultCount}"/>
+            </div>
+        </div>        
+    </div>
+    
+</aura:component>

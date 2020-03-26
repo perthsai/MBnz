@@ -1,0 +1,6 @@
+<aura:event type="COMPONENT" description="Event template">
+     <aura:attribute name="monthWeekFilterName" type="String"/>
+     <aura:attribute name="campaignName" type="String"/>
+     <aura:attribute name="dateFilter" type="String"/>
+     <aura:attribute name="defaultCount" type="Integer"/>
+</aura:event>

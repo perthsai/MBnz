@@ -1,0 +1,456 @@
+<aura:component implements="flexipage:availableForAllPageTypes,force:appHostable,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickActionWithoutHeader" 
+                access="Global"
+                controller="MBFS_CreateNewLeadController">
+    <ltng:require styles="/resource/SLDS/assets/styles/salesforce-lightning-design-system.min.css"/>
+    
+    <style>      
+        .oneAnchorHeader
+        {
+        display:none !important;
+        }      
+        .slds-brand-band:before
+        {
+        background-image:none;
+        }
+        .slds-brand-band:after
+        {
+        background-image:none;
+        }         
+        .modal-container{
+        width: 65%;
+        max-width: 100% !important;
+        }
+        
+    </style>
+    
+       
+    <aura:attribute name="ContractDeatilsData"  type="MBFS_MarkerInterface"/> 
+    <aura:attribute name="NewEditTaskData"  type="MBFS_MarkerInterface"/>
+    <aura:attribute name="OutComeList" type="List"/> 
+    <aura:attribute name="SubOutComeList" type="List"/> 
+    
+   
+    <aura:attribute type="String" name="outComeName" default=""/> 
+    <aura:attribute type="String" name="subOutComeName" default=""/>
+    <aura:attribute type="String" name="subOutComeAction" default=""/>
+    <aura:attribute type="String" name="selectedContractID" default=""/>
+    
+    <aura:attribute name="recordId" type="String" />
+    <aura:handler name="init" value="{!this}" action="{!c.initCall}"/>
+    
+    <aura:attribute name="FUTURE_TASK" type="Task"
+                    default="{ 'sobjectType': 'Task',
+                             'Subject': 'Call',
+                             'ActivityDate':'',
+                             'Description':''
+                             }"/>
+    
+    <aura:attribute name="FUTURE_LEAD" type="Lead"
+                    default="{ 'sobjectType': 'Lead',
+                             'Description':'',
+                             'PartnerAccount':'',
+                             'FirstName':'',
+                             'LastName':'',
+                             'Email':'',
+                             'Phone':''
+                             }"/>
+    
+    <aura:attribute name="FINANCE_TASK" type="Task"
+                    default="{ 'sobjectType': 'Task',
+                             'Subject': '1st Contact Attempt',
+                             'ActivityDate':'',
+                             'Description':''
+                             }"/>
+    
+    <aura:attribute name="MBFS_Customer_Not_Interested" type="List"/>
+    <aura:attribute name="MBFS_Do_Not_Call" type="List"/>
+    <aura:attribute name="MBFS_Lost_to_Competitor" type="List"/>
+    <aura:attribute name="MBFS_Nature_of_Request" type="List"/>
+    <aura:attribute name="MBFS_Lead_Source" type="List"/>
+    <aura:attribute name="MBFS_Lead_Type" type="List"/>
+    
+    <aura:attribute name="MBFS_Nature_of_LeadAll" type="List"/>
+    
+    <aura:attribute name="MBFS_Customer_Not_Interested_Value" type="String"/>
+    <aura:attribute name="MBFS_Do_Not_Call_Value" type="String"/>
+    <aura:attribute name="MBFS_Lost_to_Competitor_Value" type="String"/>
+    <aura:attribute name="MBFS_Nature_of_Request_Value" type="String"/>
+    <aura:attribute name="MBFS_Lead_Source_Value" type="String"/>
+    <aura:attribute name="MBFS_Lead_Type_Value" type="String"/>
+    
+    <aura:attribute name="MBFS_Interested_Vehicle_category" type="List"/>
+    <aura:attribute name="MBFS_Interested_Vehicle_category_Value" type="String"/>
+    
+    <aura:attribute name="MBFS_Vehicle_Make_interest" type="List"/>
+    <aura:attribute name="MBFS_Vehicle_Make_interest_Value" type="String"/>
+    
+    <aura:attribute name="MBFS_Model_Interest" type="List"/>
+    <aura:attribute name="MBFS_Model_Interest_Value" type="String"/>
+    <aura:attribute type="Boolean" name="exceptionFlag" default="true"/>
+    
+    <aura:attribute type="Boolean" name="openToast" default="false"/>
+    <aura:attribute type="String" name="message" default=""/>
+    <aura:attribute type="Boolean" name="isError" default="false"/>
+    <aura:attribute type="Boolean" name="isSuccess" default="false"/>
+    
+    <div aura:id="NewLeadspinner" id="NewLeadspinner" style="display:none;">
+        <lightning:spinner variant="brand" size="large"/>
+    </div>
+    
+    <c:MBFS_CustomToast open="{!v.openToast}" 
+                        Message="{!v.message}" 
+                        ShowSaveMeassage="{!v.isSuccess}" 
+                        ShowErrorMessage="{!v.isError}"/>
+    
+    <div class="slds-modal__content slds-p-around--medium">
+        <div class="slds-form slds-form_compound">
+            
+            <fieldset class="slds-form-element"> 
+                <div class="slds-form-element__group">
+                    <div class="slds-form-element__row">
+                        <lightning:icon iconName="standard:task" size="medium"/>                                                
+                    </div>
+                </div>
+            </fieldset>
+            
+            <fieldset class="slds-form-element">
+                
+                <div class="slds-form-element__group">
+                    <div class="slds-form-element__row">
+                        <div class="slds-form-element">
+                            
+                            <lightning:input type="text" aura:id="taskSubject" label="Subject" name="Subject" value="{!v.NewEditTaskData.taskObj.Subject}" required="true"/>
+                        </div>
+                        <div class="slds-form-element"> 
+                            <div class="slds-form-element__control">
+                                
+                                <label class="slds-form-element__label slds-no-flex" data-aura-class="uiLabel">
+                                    <span class="required" style="color:red">* </span>
+                                    <span class="">Due Date</span>
+                                    
+                                </label> 
+                                <aura:if isTrue="{!v.NewEditTaskData.taskObj.Id != null}">    
+                                    <ui:inputDate class="slds-input" aura:id="taskActivityDate" label="" value="{!v.NewEditTaskData.taskObj.ActivityDate}"  displayDatePicker="true" required="true" disabled="true"/>
+                                    <aura:set attribute="else">
+                                        <ui:inputDate class="slds-input" aura:id="taskActivityDate" label="" value="{!v.NewEditTaskData.taskObj.ActivityDate}"  displayDatePicker="true" required="true" disabled="true"/>
+                                    </aura:set>
+                                </aura:if>
+                                
+                                
+                                
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
+            </fieldset>  
+            
+            <div class="slds-form-element__row">
+                <div class="slds-form-element">
+                    <lightning:select name="selectItem" label="Outcome" onchange="{!c.onOutComeChange}"  value="{!v.outComeName}" required="true">                       
+                        <option value="">Select</option>
+                        <aura:iteration items="{!v.OutComeList}" var="item" indexVar="index"> 
+                            <option value="{!item.key}">{!item.key}</option>                    
+                        </aura:iteration>                     
+                    </lightning:select> 
+                </div>
+                
+                <div class="slds-form-element">
+                    <lightning:select label="Sub Outcome" onchange="{!c.onSubOutComeChange}"  value="{!v.subOutComeName}" required="true">                       
+                        <option value="">Select</option>
+                        <aura:iteration items="{!v.SubOutComeList}" var="item" indexVar="index">                              
+                            <option value="{!item.value}" >{!item.value}</option>                                                    
+                        </aura:iteration>                     
+                    </lightning:select> 
+                </div>
+            </div>
+            <aura:if isTrue="{!v.subOutComeAction == 'WASH_LIST_NEW_LEAD'}">
+                <fieldset class="slds-form-element"> 
+                    <div class="slds-form-element__group">
+                        <div class="slds-form-element__row">
+                            <lightning:icon iconName="action:new_lead" size="small"/>                                                
+                        </div>
+                    </div>
+                </fieldset>
+                
+                <fieldset class="slds-form-element">                                       
+                    <div class="slds-form-element__group">
+                        
+                        <div class="slds-form-element__row">
+                            
+                            <div class="slds-form-element">                                             
+                                <lightning:select name="selectItem" label="Lead Type"  value="{!v.MBFS_Lead_Type_Value}" required="true" onchange="{!c.onLeadTypeChange}">                       
+                                    <aura:iteration items="{!v.MBFS_Lead_Type}" var="item" indexVar="index"> 
+                                        <option value="{!item}">{!item}</option>                    
+                                    </aura:iteration>                     
+                                </lightning:select> 
+                            </div> 
+                            <div class="slds-form-element">                                             
+                                <lightning:select name="selectItem" label="Nature of Lead"  value="{!v.MBFS_Nature_of_Request_Value}" required="true" >                       
+                                    <aura:iteration items="{!v.MBFS_Nature_of_Request}" var="item" indexVar="index"> 
+                                        <option value="{!item}">{!item}</option>                    
+                                    </aura:iteration>                     
+                                </lightning:select> 
+                            </div>
+                            
+                            <div class="slds-form-element">                                             
+                                <lightning:select name="selectItem" label="Lead Source"  value="{!v.MBFS_Lead_Source_Value}" required="true" >                       
+                                    <aura:iteration items="{!v.MBFS_Lead_Source}" var="item" indexVar="index"> 
+                                        <option value="{!item}">{!item}</option>                    
+                                    </aura:iteration>                     
+                                </lightning:select> 
+                            </div>
+                            
+                        </div> 
+                        
+                        <div class="slds-form-element__row">
+                            
+                            <div class="slds-form-element">                                             
+                                <lightning:select name="selectItem" label="Interested vehicle category"  value="{!v.MBFS_Interested_Vehicle_category_Value}" required="true">                       
+                                    <option value="">Select</option> 
+                                    <aura:iteration items="{!v.MBFS_Interested_Vehicle_category}" var="item" indexVar="index"> 
+                                        <option value="{!item}">{!item}</option>                    
+                                    </aura:iteration>                     
+                                </lightning:select> 
+                            </div> 
+                            <div class="slds-form-element">                                             
+                                <lightning:select name="selectItem" label="Vehicle make interest"  value="{!v.MBFS_Vehicle_Make_interest_Value}" required="true" >                       
+                                    <option value="">Select</option> 
+                                    <aura:iteration items="{!v.MBFS_Vehicle_Make_interest}" var="item" indexVar="index"> 
+                                        <option value="{!item}">{!item}</option>                    
+                                    </aura:iteration>                     
+                                </lightning:select> 
+                            </div>
+                            <div class="slds-form-element">                                             
+                                <lightning:select name="selectItem" label="Vehicle model interest"  value="{!v.MBFS_Model_Interest_Value}" required="true" >                       
+                                    <option value="">Select</option> 
+                                    <aura:iteration items="{!v.MBFS_Model_Interest}" var="item" indexVar="index"> 
+                                        <option value="{!item}">{!item}</option>                    
+                                    </aura:iteration>                     
+                                </lightning:select> 
+                            </div>
+                            
+                        </div> 
+                        
+                        
+                        
+                        <div class="slds-form-element__row">
+                            <div class="slds-form-element">                                             
+                                <lightning:input type="text" aura:id="leadFirstName" label="First Name" name="First Name" value="{!v.FUTURE_LEAD.FirstName}" required="true"/>
+                            </div>
+                            <div class="slds-form-element">                                             
+                                <lightning:input type="text" aura:id="leadLastName" label="Last Name" name="Last Name" value="{!v.FUTURE_LEAD.LastName}" required="true"/>
+                            </div>
+                            <div class="slds-form-element">                                             
+                                <aura:if isTrue="{!v.MBFS_Lead_Type_Value == 'Finance Lead'}">
+                                    <lightning:input type="email" aura:id="leadEmailName" label="Email" name="Email" value="{!v.FUTURE_LEAD.Email}" required="true"/>
+                                    <aura:set attribute="else">
+                                        <lightning:input type="email" aura:id="leadEmailName" label="Email" name="Email" value="{!v.FUTURE_LEAD.Email}" required="false"/>
+                                    </aura:set>
+                                </aura:if>  
+                            </div>
+                            
+                        </div>  
+                        
+                        <div class="slds-form-element__row">
+                            
+                            <div class="slds-form-element">                                             
+                                <lightning:input type="text" aura:id="leadPhoneName" label="Phone" name="Phone" value="{!v.FUTURE_LEAD.Phone}" required="false"/>
+                            </div>
+                            
+                            <div class="slds-form-element">                                             
+                                <lightning:input type="text" label="Mobile" name="Mobile" value="{!v.FUTURE_LEAD.MobilePhone}" required="false"/>
+                            </div>
+                            <aura:if isTrue="{!v.MBFS_Lead_Type_Value == 'Retailer Lead'}">
+                                <div class="slds-form-element"> 
+                                    <c:MBFS_NewLeadAccountLookUp accountId="{!v.FUTURE_LEAD.MBFS_Dealer_Account__c}" selectedRecord="{!v.FUTURE_LEAD.MBFS_Dealer_Account__r}"/>                                                       
+                                </div> 
+                            </aura:if>     
+                        </div>  
+                        
+                        
+                        
+                        <div class="slds-form-element__row">
+                            
+                            <div class="slds-form-element">
+                                <lightning:input type="text" aura:id="leadDescription" label="Comments" name="Comments" value="{!v.FUTURE_LEAD.Description}"/>
+                            </div>
+                        </div>  
+                        
+                        <!-- SF-74 Start -->
+                        <aura:if isTrue="{!v.MBFS_Lead_Type_Value == 'Finance Lead'}">
+                            <fieldset class="slds-form-element"> 
+                                <div class="slds-form-element__group">
+                                    <div class="slds-form-element__row">
+                                        <lightning:icon iconName="standard:task" size="medium"/>                                                
+                                    </div>
+                                </div>
+                            </fieldset>
+                            
+                            <fieldset class="slds-form-element">
+                                
+                                <div class="slds-form-element__group">
+                                    <div class="slds-form-element__row">
+                                        <div class="slds-form-element">
+                                            
+                                            <lightning:input type="text" aura:id="taskSubject" label="Subject" name="Subject" value="{!v.FINANCE_TASK.Subject}" required="true" disabled="true"/>
+                                        </div>
+                                        <div class="slds-form-element"> 
+                                            <div class="slds-form-element__control">
+                                                
+                                                <label class="slds-form-element__label slds-no-flex" data-aura-class="uiLabel">
+                                                    <span class="required" style="color:red">* </span>
+                                                    <span class="">Due Date</span>
+                                                    
+                                                </label> 
+                                                <ui:inputDate class="slds-input" aura:id="taskActivityDate" label="" value="{!v.FINANCE_TASK.ActivityDate}"  displayDatePicker="true" required="true" disabled="false"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="slds-form-element__row">                            
+                                        <div class="slds-form-element">
+                                            <lightning:textarea name="Comment" value="{!v.FINANCE_TASK.Description}" label="Comments"  />                                            
+                                        </div>
+                                    </div>  
+                                    
+                                </div>
+                            </fieldset>  
+                            
+                        </aura:if> 
+                        <!-- SF-74 End -->                        
+                        
+                        
+                    </div>
+                </fieldset> 
+                
+            </aura:if>
+            
+            <aura:if isTrue="{!v.subOutComeAction == 'FUTURE_TASK'}">
+                <fieldset class="slds-form-element">                                       
+                    <div class="slds-form-element__group">
+                        <div class="slds-form-element__row">
+                            <div class="slds-form-element">
+                                <lightning:input type="text" aura:id="futureTaskSubject" label="Subject" name="Subject" value="{!v.FUTURE_TASK.Subject}" required="true"/>
+                            </div>
+                            <div class="slds-form-element">
+                                <label class="slds-form-element__label slds-no-flex" data-aura-class="uiLabel">
+                                    <span class="required" style="color:red">* </span>
+                                    <span class="">Due Date</span>
+                                    
+                                </label>   
+                                
+                                <ui:inputDate class="slds-input" aura:id="futureTaskActivityDate" label="" value="{!v.FUTURE_TASK.ActivityDate}"  displayDatePicker="true" required="true"/>
+                                
+                                
+                            </div>
+                        </div>    
+                        <div class="slds-form-element__row">
+                            <div class="slds-form-element">
+                                <lightning:input type="text" aura:id="futureTaskDescription" label="Comments" name="Comments" value="{!v.FUTURE_TASK.Description}"/>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </fieldset> 
+            </aura:if>
+            
+            <aura:if isTrue="{!v.subOutComeAction == 'WASH_LIST_CUSTOMER_NOT_INTERESTED'}">
+                <fieldset class="slds-form-element">                                       
+                    <div class="slds-form-element__group">
+                        
+                        <div class="slds-form-element__row">
+                            
+                            <div class="slds-form-element">
+                                <lightning:select name="selectItem" label="Customer Not Interested"  value="{!v.MBFS_Customer_Not_Interested_Value}" required="true">                       
+                                    <aura:iteration items="{!v.MBFS_Customer_Not_Interested}" var="item" indexVar="index"> 
+                                        <option value="{!item}">{!item}</option>                    
+                                    </aura:iteration>                     
+                                </lightning:select> 
+                            </div>
+                        </div>
+                        
+                        <div class="slds-form-element__row">
+                            <div class="slds-form-element">
+                                <lightning:input type="text" aura:id="futureTaskDescription" label="Comments" name="Comments" value="{!v.NewEditTaskData.taskObj.Description}"/>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </fieldset> 
+            </aura:if>
+            
+            <aura:if isTrue="{!v.subOutComeAction == 'WASH_LIST_DO_NOT_CALL_REGISTER'}">
+                <fieldset class="slds-form-element">                                       
+                    <div class="slds-form-element__group">
+                        
+                        <div class="slds-form-element__row">                                            
+                            <div class="slds-form-element">
+                                <lightning:select name="selectItem" label="Do Not Call Register"  value="{!v.MBFS_Do_Not_Call_Value}" required="true">                       
+                                    <aura:iteration items="{!v.MBFS_Do_Not_Call}" var="item" indexVar="index"> 
+                                        <option value="{!item}">{!item}</option>                    
+                                    </aura:iteration>                     
+                                </lightning:select> 
+                            </div>
+                        </div>
+                        
+                        <div class="slds-form-element__row">
+                            <div class="slds-form-element">
+                                <lightning:input type="text" label="Comment" name="Comment" value="{!v.NewEditTaskData.taskObj.Description}"/>
+                            </div>                                          
+                        </div>
+                        
+                        
+                    </div>
+                </fieldset> 
+            </aura:if>
+            
+            <aura:if isTrue="{!v.subOutComeAction == 'WASH_LIST_LOST_TO_COMPETITOR'}">
+                <fieldset class="slds-form-element">                                       
+                    <div class="slds-form-element__group">
+                        
+                        <div class="slds-form-element__row">                                            
+                            <div class="slds-form-element">
+                                <lightning:select name="selectItem" label="Lost to Competitor"  value="{!v.MBFS_Lost_to_Competitor_Value}" required="true">                       
+                                    <aura:iteration items="{!v.MBFS_Lost_to_Competitor}" var="item" indexVar="index"> 
+                                        <option value="{!item}">{!item}</option>                    
+                                    </aura:iteration>                     
+                                </lightning:select> 
+                            </div>
+                        </div>
+                        
+                        <div class="slds-form-element__row">
+                            <div class="slds-form-element">
+                                <lightning:input type="text" label="Comment" name="Comment" value="{!v.NewEditTaskData.taskObj.Description}" required="true"/>
+                            </div>                                          
+                        </div>
+                        
+                    </div>
+                </fieldset> 
+            </aura:if>
+            
+            <aura:if isTrue="{!v.subOutComeAction == 'WASH_LIST'}">
+                <fieldset class="slds-form-element">                                       
+                    <div class="slds-form-element__group">
+                        <div class="slds-form-element__row">
+                            <div class="slds-form-element">
+                                <lightning:input type="text" label="Comment" name="Comment" value="{!v.NewEditTaskData.taskObj.Description}"/>
+                            </div>                                          
+                        </div>
+                        
+                    </div>
+                </fieldset> 
+            </aura:if>
+            
+            
+            
+        </div>
+        
+        <div class="slds-modal__footer">
+            <ui:button class="btn btn-default slds-button--brand" press="{!c.newEditTaskSubmit }">Submit</ui:button>
+            <ui:button class="slds-button slds-button--neutral" press="{!c.hideModal }">Cancel</ui:button>
+            
+        </div>
+    </div>
+    
+</aura:component>

@@ -1,0 +1,1192 @@
+<aura:component controller="MBFS_RTMContractSegmentationController" 
+                implements="force:appHostable,flexipage:availableForAllPageTypes" 
+                access="GLOBAL">
+    <ltng:require styles="/resource/SLDS/assets/styles/salesforce-lightning-design-system.min.css"/>
+    
+    <aura:attribute name="WrapperData"  
+                    type="MBFS_MarkerInterface"/>
+    <aura:attribute type="String" 
+                    name="monthWeekFilterName" 
+                    default="" 
+                    description="will be removed"/> 
+    
+    <aura:attribute type="String" 
+                    name="campaignName" 
+                    default=""/> 
+    <aura:attribute type="String" 
+                    name="dateFilter" 
+                    default=""/> 
+    
+    
+    <aura:method name="recordDataList" action="{!c.doInIT}"> 
+        <aura:attribute name="WrapperData"  
+                        type="MBFS_MarkerInterface"/>       
+        <aura:attribute type="String" 
+                        name="monthWeekFilterName" 
+                        description="will be removed"/>      
+        <aura:attribute type="String" 
+                        name="campaignName" 
+                        default=""/> 
+        <aura:attribute type="String" 
+                        name="dateFilter" 
+                        default=""/> 
+    </aura:method>
+    
+    
+    <aura:attribute type="Integer" name="pageNumber" default="1" />
+    <aura:attribute type="Integer" name="maxPage" default="0" />
+    <aura:attribute type="String" name="sortField" default="MBFS_Last_Activity_Due_Date__c"/>
+    <aura:attribute type="Boolean" name="sortAsc" default="false"/>
+    
+    <aura:attribute name="PageAccountList" type="MBFS_MarkerInterface[]"/>
+    <aura:attribute name="AllAccountList"  type="MBFS_MarkerInterface[]"/> 
+    <aura:attribute name="ContractDeatilsData"  type="MBFS_MarkerInterface"/> 
+    <aura:attribute name="NewEditTaskData"  type="MBFS_MarkerInterface"/>
+    <aura:attribute name="OutComeList" type="List"/> 
+    <aura:attribute name="SubOutComeList" type="List"/> 
+    
+    <aura:handler name="change"  value="{!v.pageNumber}" action="{!c.renderPage}" />
+    <aura:attribute type="Integer" name="defaultCount"/> 
+    <aura:attribute type="Integer" name="totalNoOfrecord" default="0"/> 
+    
+    <aura:attribute type="String" name="outComeName" default=""/> 
+    <aura:attribute type="String" name="subOutComeName" default=""/>
+    <aura:attribute type="String" name="subOutComeAction" default=""/>
+    <aura:attribute type="String" name="selectedContractID" default=""/>
+    
+    <aura:registerEvent name="assignToEvt" type="c:MBFS_RTM_NewTaskRefresh"/>
+    
+    
+    <aura:handler name="init" value="{!this}" action="{!c.initCall}"/>
+    
+    <aura:attribute name="FUTURE_TASK" type="Task"
+                    default="{ 'sobjectType': 'Task',
+                             'Subject': 'Call',
+                             'ActivityDate':'',
+                             'Description':''
+                             }"/>
+    
+    <aura:attribute name="FUTURE_LEAD" type="Lead"
+                    default="{ 'sobjectType': 'Lead',
+                             'Description':'',
+                             'PartnerAccount':'',
+                             'FirstName':'',
+                             'LastName':'',
+                             'Email':'',
+                             'Phone':''
+                             }"/>
+    
+    <aura:attribute name="FINANCE_TASK" type="Task"
+                    default="{ 'sobjectType': 'Task',
+                             'Subject': '1st Contact Attempt',
+                             'ActivityDate':'',
+                             'Description':''
+                             }"/>
+    
+    <aura:attribute name="MBFS_Customer_Not_Interested" type="List"/>
+    <aura:attribute name="MBFS_Do_Not_Call" type="List"/>
+    <aura:attribute name="MBFS_Lost_to_Competitor" type="List"/>
+    <aura:attribute name="MBFS_Nature_of_Request" type="List"/>
+    <aura:attribute name="MBFS_Lead_Source" type="List"/>
+    <aura:attribute name="MBFS_Lead_Type" type="List"/>
+    
+    <aura:attribute name="MBFS_Nature_of_LeadAll" type="List"/>
+    
+    <aura:attribute name="MBFS_Customer_Not_Interested_Value" type="String"/>
+    <aura:attribute name="MBFS_Do_Not_Call_Value" type="String"/>
+    <aura:attribute name="MBFS_Lost_to_Competitor_Value" type="String"/>
+    <aura:attribute name="MBFS_Nature_of_Request_Value" type="String"/>
+    <aura:attribute name="MBFS_Lead_Source_Value" type="String"/>
+    <aura:attribute name="MBFS_Lead_Type_Value" type="String"/>
+    
+    <aura:attribute name="MBFS_Interested_Vehicle_category" type="List"/>
+    <aura:attribute name="MBFS_Interested_Vehicle_category_Value" type="String"/>
+    
+    <aura:attribute name="MBFS_Vehicle_Make_interest" type="List"/>
+    <aura:attribute name="MBFS_Vehicle_Make_interest_Value" type="String"/>
+    
+    <aura:attribute name="MBFS_Model_Interest" type="List"/>
+    <aura:attribute name="MBFS_Model_Interest_Value" type="String"/>
+    <aura:attribute type="Boolean" name="exceptionFlag" default="true"/>
+    
+  
+    
+    <aura:attribute name="cssStyle" type="String" />
+    <style>{!v.cssStyle}</style>  
+    
+    <div aura:id="RTMspinner" id="RTMspinner" style="display:none;">
+        <lightning:spinner variant="brand" size="large"/>
+    </div>
+    <aura:if isTrue="{!v.PageAccountList.length > 0 }">
+        <div class="udt-agreement slds-main-container">
+            <section class="mainTable"> 
+                <div class="header">
+                    <table class="slds-table slds-table_bordered slds-max-medium-table_stacked-horizontal slds-table_col-bordered slds-box slds-box_x-small slds-text-align_center" style="background-color: #efefef;">
+                        <thead>
+                            <tr class="slds-text-title_caps slds-is-selected">
+                                <aura:iteration items="{!v.WrapperData.resultSet.columnHeader}" var="item" indexVar="index">                       
+                                    <th scope="col" class="slds-cell-wrap" style="background-color: #e0e2e5;cursor: pointer;">                      
+                                        <div style="color: #000000;font-weight: bold;" id="{!item.fieldApi}" onclick="{!c.sortField}"
+                                             class="slds-truncate"
+                                             title="{!item.fieldLabel}">
+                                            {!item.fieldLabel} 
+                                            
+                                            <div class="slds-icon_container">
+                                                <aura:if isTrue="{!and(v.sortField == item.fieldApi, v.sortAsc == true)}">
+                                                    <lightning:icon iconName="utility:arrowup" size="xx-small"/>
+                                                </aura:if>
+                                                <aura:if isTrue="{!and(v.sortField == item.fieldApi, v.sortAsc == false)}">
+                                                    <lightning:icon iconName="utility:arrowdown" size="xx-small"/>
+                                                </aura:if>
+                                            </div>                      
+                                        </div>     
+                                    </th> 
+                                </aura:iteration>
+                                <th scope="col" class="slds-cell-wrap" style="background-color: #e0e2e5;">
+                                    <div style="color: #000000;font-weight: bold;">
+                                        New Task
+                                    </div>             
+                                </th>
+                            </tr>
+                        </thead>
+                        
+                    </table>
+                </div>
+                
+                <div class="tblbody">
+                    <table class="slds-table slds-table_bordered slds-max-medium-table_stacked-horizontal slds-table_col-bordered slds-box slds-box_x-small slds-text-align_center" style="background-color: #efefef;">
+                        <tbody>
+                            <aura:iteration items="{!v.PageAccountList}" var="itemr" indexVar="index">
+                                <tr class="slds-hint-parent" style="background-color: #ffffff;">                    
+                                    <aura:iteration items="{!itemr.fields}" var="itemc" indexVar="index">                                       
+                                        
+                                        <aura:if isTrue="{!index == 0}">     
+                                            <td data-label="{!itemc.fieldLabel}" class="slds-cell-wrap">                              
+                                                <div style="color: #0263ff;cursor: pointer;" class="slds-truncate" title="{!itemc.fieldValue}" onclick="{!c.onContractDetailsClick}" id="{!itemr.contractId}">
+                                                    {! itemc.fieldValue}
+                                                </div>
+                                            </td>
+                                            <aura:set attribute="else">
+                                                <td data-label="{!itemc.fieldLabel}" class="slds-cell-wrap">                              
+                                                        <div class="slds-truncate" title="{!itemc.fieldValue}">
+                                                            <aura:unescapedHtml value="{! itemc.fieldValue}"/>
+                                                        </div>
+                                                </td> 
+                                            </aura:set>
+                                        </aura:if>                          
+                                        
+                                    </aura:iteration>   
+                                    <td class="slds-cell-shrink slds-cell-wrap" data-label="Select">
+                                        <div id="{!itemr.contractId}" onclick="{!c.onNewLeadCreatClick}">
+                                            <lightning:icon iconName="action:new_task" size="x-small"/>
+                                        </div>                           
+                                    </td>    
+                                </tr>
+                            </aura:iteration>
+                            
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+            <div class="slds-align-bottom" >
+                <div class="slds-button-group agreement-pagination " role="group">
+                    
+                    
+                    
+                    <div class="slds-medium-size_8-of-12 slds-text-align_center col_3">
+                        <div class="paginationBtns">
+                            <button onKeyPress ="{!c.firstPage}" onclick="{!c.firstPage}" class="slds-button slds-button--neutral">
+                                First
+                            </button>
+                            <button onKeyPress ="{!c.prevPage}" onclick="{!c.prevPage}" class="slds-button slds-button--neutral">
+                                Prev
+                            </button>
+                            <button onKeyPress ="" class="slds-button slds-button--neutral">
+                                {!v.pageNumber} / {!v.maxPage} 
+                            </button>
+                            <button onKeyPress ="{!c.nextPage}" onclick="{!c.nextPage}" class="slds-button slds-button--neutral">
+                                Next
+                            </button>
+                            <button onKeyPress ="{!c.lastPage}" onclick="{!c.lastPage}" class="slds-button slds-button--neutral">
+                                Last
+                            </button>
+                        </div>
+                        
+                        <div class="slds-size_1-of-2 slds-medium-size_2-of-12 slds-text-align_right col_4">
+                            <div class="record-count ">
+                                <lightning:select name="selectItem" label="" onchange="{!c.onDefaultCountChange}" value="{!v.defaultCount}">
+                                    <option value="25">25</option>                  
+                                    <option value="50">50</option>                  
+                                    <option value="100">100</option>                  
+                                </lightning:select> 
+                            </div>
+                        </div>
+                        
+                    </div>                  
+                </div>               
+            </div>
+            
+            
+            
+            <div class="slds-hide" aura:id="MBFSRTMContractDetails">
+                <div role="dialog" tabindex="-1" aria-labelledby="header99" class="slds-modal slds-fade-in-open ">
+                    <div class="slds-modal__container" style="max-width: 80%;width:80%;">
+                       
+                        <div class="slds-modal__header">
+                            <button class="slds-button slds-modal__close slds-button--icon-inverse" title="Close" onclick="{!c.hideModal}">
+                                X
+                                <span class="slds-assistive-text">Close</span>
+                            </button>
+                            <h2 id="header99" class="slds-text-heading--medium">
+                                Contract Details 
+                                
+                            </h2>
+                            
+                        </div>
+                       
+                        <div class="slds-modal__content slds-p-around--medium">
+                            
+                            <div class="slds-grid slds-wrap">
+                                <div class="slds-size_1-of-1">
+                                    <div class="slds-box slds-box_x-small slds-text-align_left slds-m-around_x-small">
+                                        <div class="slds-card-wrapper">
+                                            
+                                            <article class="slds-card">
+                                                <div class="slds-card__header slds-grid">
+                                                    <header class="slds-media slds-media_center slds-has-flexi-truncate">
+                                                        <div class="slds-media__figure">
+                                                            <span class="slds-icon_container slds-icon-standard-contract" title="description of icon when needed">
+                                                                <lightning:icon iconName="standard:contract" size="medium"/>
+                                                            </span>
+                                                        </div>
+                                                        <div class="slds-media__body" style="text-align: left;">
+                                                            <h2>  <span class="slds-text-heading_small">Contract Details </span></h2>
+                                                        </div>
+                                                        <aura:if isTrue="{!v.ContractDeatilsData.isDoNotCall}">
+                                                            <lightning:icon iconName="utility:end_call" size="large" alternativeText="Do Not Call" class="doNotCall"/>
+                                                            <div style="color:red;"><b>Do Not Call</b></div>
+                                                        </aura:if> 
+                                                    </header>
+                                                    
+                                                </div>
+                                                
+                                                <div class="slds-card__body">
+                                                    <aura:if isTrue="{!v.ContractDeatilsData.diaryNotesList.length > 0}">
+                                                    <div class="FixedHeightContainer">
+                                                        <b>Diary Notes</b>
+                                                        <div class="Content">
+                                                            <ul class="slds-card__body_inner slds-grid slds-wrap slds-grid_pull-padded">
+                                                                <aura:iteration items="{!v.ContractDeatilsData.diaryNotesList}" var="itemc" indexVar="index">
+                                                                    <div class="slds-box slds-card__body_inner slds-grid slds-wrap slds-grid_pull-padded" style="width:100%;">
+                                                                    <li class="slds-p-horizontal_small slds-size_1-of-1 slds-medium-size_1-of-3">
+                                                                        <article class="slds-tile slds-media slds-card__tile slds-hint-parent">
+                                                                            <div class="slds-media__body">           
+                                                                                <div class="slds-tile__detail">
+                                                                                    <dl class="slds-list_horizontal slds-wrap">
+                                                                                        <dt class="slds-item_label slds-text-color_weak slds-truncate" title="Comments Description"><b>Comments Description :</b> </dt>
+                                                                                        <dd class="slds-item_detail slds-truncate" title="{!itemc.MBFS_Comments_description__c}">{!itemc.MBFS_Comments_description__c}</dd>
+                                                                                        
+                                                                                    </dl>
+                                                                                </div>
+                                                                            </div>
+                                                                        </article>
+                                                                    </li>
+                                                                    <li class="slds-p-horizontal_small slds-size_1-of-1 slds-medium-size_1-of-3">
+                                                                        <article class="slds-tile slds-media slds-card__tile slds-hint-parent">
+                                                                            <div class="slds-media__body">           
+                                                                                <div class="slds-tile__detail">
+                                                                                    <dl class="slds-list_horizontal slds-wrap">
+                                                                                        <dt class="slds-item_label slds-text-color_weak slds-truncate" title="Execution Date"><b>Execution Date :</b> </dt>
+                                                                                        <dd class="slds-item_detail slds-truncate" title="{!itemc.MBFS_Execution_Date__c}">{!itemc.MBFS_Execution_Date__c}</dd>
+                                                                                        
+                                                                                    </dl>
+                                                                                </div>
+                                                                            </div>
+                                                                        </article>
+                                                                    </li>
+                                                                   <li class="slds-p-horizontal_small slds-size_1-of-1 slds-medium-size_1-of-3">
+                                                                        <article class="slds-tile slds-media slds-card__tile slds-hint-parent">
+                                                                            <div class="slds-media__body">           
+                                                                                <div class="slds-tile__detail">
+                                                                                    <dl class="slds-list_horizontal slds-wrap">
+                                                                                        <dt class="slds-item_label slds-text-color_weak slds-truncate" title="Reason"><b>Reason :</b> </dt>
+                                                                                        <dd class="slds-item_detail slds-truncate" title="{!itemc.MBFS_Reason__c}">{!itemc.MBFS_Reason__c}</dd>
+                                                                                        
+                                                                                    </dl>
+                                                                                </div>
+                                                                            </div>
+                                                                        </article>
+                                                                    </li>   
+                                                                    <li class="slds-p-horizontal_small slds-size_1-of-1 slds-medium-size_1-of-1">
+                                                                        <article class="slds-tile slds-media slds-card__tile slds-hint-parent">
+                                                                            <div class="slds-media__body">           
+                                                                                <div class="slds-tile__detail">
+                                                                                    <dl class="slds-list_horizontal slds-wrap">
+                                                                                        <dt class="slds-item_label slds-text-color_weak slds-truncate" style="width:15%;" title="Comment"><b>Comment :</b> </dt>
+                                                                                        <dd class="slds-item_detail">{!itemc.MBFS_Comment__c}</dd>
+                                                                                    </dl>
+                                                                                </div>
+                                                                            </div>
+                                                                        </article>
+                                                                    </li>
+                                                                    </div>
+                                                                </aura:iteration>
+                                                            </ul>
+                                                        </div>
+                                                    </div>
+                                                        <aura:set attribute="else">
+                                                            <div class="udt-agreement slds-main-container overflow-auto" >
+                                                                <b>Diary Notes</b>
+                                                                <div class="slds-text-heading_small">
+                                                                   &nbsp;&nbsp;&nbsp;&nbsp; {!$Label.c.MBFS_NoDataFound} 
+                                                                </div>
+                                                            </div>
+                                                        </aura:set>
+                                                    </aura:if>
+                                                    <br></br>
+                                                    
+                                                    <b>Customer</b>
+                                                    <ul class="slds-card__body_inner slds-grid slds-wrap slds-grid_pull-padded">
+                                                        <aura:iteration items="{!v.ContractDeatilsData.conObjRTMDetails}" var="itemc" indexVar="index">
+                                                            <li class="slds-p-horizontal_small slds-size_1-of-1 slds-medium-size_1-of-2">
+                                                                <article class="slds-tile slds-media slds-card__tile slds-hint-parent">
+                                                                    <div class="slds-media__body">           
+                                                                        <div class="slds-tile__detail">
+                                                                            <dl class="slds-list_horizontal slds-wrap">
+                                                                                <dt class="slds-item_label slds-text-color_weak slds-truncate" title="{!itemc.label}"><b>{!itemc.label} :</b> </dt>
+                                                                                <dd class="slds-item_detail slds-truncate" title="{!itemc.value}">{!itemc.value}</dd>
+                                                                                
+                                                                            </dl>
+                                                                        </div>
+                                                                    </div>
+                                                                </article>
+                                                            </li>
+                                                        </aura:iteration>
+                                                    </ul>
+                                                    
+                                                    <br></br>
+                                                    <b>Vehicle</b>   
+                                                    <ul class="slds-card__body_inner slds-grid slds-wrap slds-grid_pull-padded">
+                                                        <aura:iteration items="{!v.ContractDeatilsData.conObjBorrower}" var="itemc" indexVar="index">
+                                                            <li class="slds-p-horizontal_small slds-size_1-of-1 slds-medium-size_1-of-2">
+                                                                <article class="slds-tile slds-media slds-card__tile slds-hint-parent">
+                                                                    <div class="slds-media__body">           
+                                                                        <div class="slds-tile__detail">
+                                                                            <dl class="slds-list_horizontal slds-wrap">
+                                                                                <dt class="slds-item_label slds-text-color_weak slds-truncate" title="{!itemc.label}"><b>{!itemc.label} :</b> </dt>
+                                                                                <dd class="slds-item_detail slds-truncate" title="{!itemc.value}">{!itemc.value}</dd>
+                                                                                
+                                                                            </dl>
+                                                                        </div>
+                                                                    </div>
+                                                                </article>
+                                                            </li>
+                                                        </aura:iteration>
+                                                    </ul>
+                                                    <br></br>
+                                                    <b>Finance</b>
+                                                    <ul class="slds-card__body_inner slds-grid slds-wrap slds-grid_pull-padded">
+                                                        <aura:iteration items="{!v.ContractDeatilsData.conObjFinance}" var="itemc" indexVar="index">
+                                                            <li class="slds-p-horizontal_small slds-size_1-of-1 slds-medium-size_1-of-2">
+                                                                <article class="slds-tile slds-media slds-card__tile slds-hint-parent">
+                                                                    <div class="slds-media__body">           
+                                                                        <div class="slds-tile__detail">
+                                                                            <dl class="slds-list_horizontal slds-wrap">
+                                                                                <dt class="slds-item_label slds-text-color_weak slds-truncate" title="{!itemc.label}"><b>{!itemc.label} :</b> </dt>
+                                                                                <dd class="slds-item_detail slds-truncate" title="{!itemc.value}">{!itemc.value}</dd>
+                                                                                
+                                                                            </dl>
+                                                                        </div>
+                                                                    </div>
+                                                                </article>
+                                                            </li>
+                                                        </aura:iteration>
+                                                    </ul>
+                                                    <br></br>
+                                                    <b>Customer Intention</b>
+                                                    <ul class="slds-card__body_inner slds-grid slds-wrap slds-grid_pull-padded">
+                                                        <aura:iteration items="{!v.ContractDeatilsData.conObjCustomerIntention}" var="itemc" indexVar="index">
+                                                            <li class="slds-p-horizontal_small slds-size_1-of-1 slds-medium-size_1-of-2">
+                                                                <article class="slds-tile slds-media slds-card__tile slds-hint-parent">
+                                                                    <div class="slds-media__body">           
+                                                                        <div class="slds-tile__detail">
+                                                                            <dl class="slds-list_horizontal slds-wrap">
+                                                                                
+                                                                                <dt class="slds-item_label slds-text-color_weak slds-truncate" title="{!itemc.label}"><b>{!itemc.label} :</b> </dt>
+                                                                                <aura:if isTrue="{!itemc.label != 'Intention Status'}">
+                                                                                            <dd class="slds-item_detail slds-truncate" title="{!itemc.value}">{!itemc.value}</dd>
+                                                                                    	<aura:set attribute="else">                                                                                            
+                                                                                			<dd class="slds-item_detail slds-truncate" title="{!itemc.value}"><img src="{!itemc.value}" style="height:25px; width:25px;" border="0"/></dd>
+                                                                                        </aura:set>
+                                                                                </aura:if>
+                                                                            </dl>
+                                                                        </div>
+                                                                    </div>
+                                                                </article>
+                                                            </li>
+                                                        </aura:iteration>
+                                                    </ul>
+                                                    
+                                                    
+                                                    
+                                                </div>
+                                            </article>
+                                        </div> 
+                                        
+                                    </div>
+                                </div>
+                                <div class="slds-size_1-of-1">
+                                    <div class="slds-box slds-box_x-small slds-text-align_left slds-m-around_x-small">
+                                        <div class="slds-card-wrapper">
+                                            <article class="slds-card">
+                                                <div class="slds-card__header slds-grid">
+                                                    <header class="slds-media slds-media_center slds-has-flexi-truncate">
+                                                        <div class="slds-media__figure">
+                                                            <span class="slds-icon_container slds-icon-standard-task" title="description of icon when needed">
+                                                                <lightning:icon iconName="standard:task" size="medium"/>
+                                                            </span>
+                                                        </div>
+                                                        <div class="slds-media__body">
+                                                            <h2>
+                                                                <span class="slds-text-heading_small">Task ({!v.ContractDeatilsData.taskList.length})</span>
+                                                            </h2>
+                                                        </div>
+                                                    </header>
+                                                    
+                                                </div>
+                                                <div class="slds-card__body">
+                                                    <table class="slds-table slds-table_fixed-layout slds-table_bordered slds-no-row-hover slds-table_cell-buffer">
+                                                        <thead>
+                                                            <tr class="slds-text-title_caps">
+                                                                <th scope="col">
+                                                                    <div class="slds-truncate" title="Outcome"><b>Outcome</b></div>
+                                                                </th>
+                                                                <th scope="col">
+                                                                    <div class="slds-truncate" title="Sub Outcome"><b>Sub Outcome</b></div>
+                                                                </th>
+                                                                <th scope="col">
+                                                                    <div class="slds-truncate" title="Due Date"><b>Due Date </b></div>
+                                                                </th>
+                                                                <th scope="col">
+                                                                    <div class="slds-truncate" title="Description"><b>Description </b></div>
+                                                                </th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <aura:iteration items="{!v.ContractDeatilsData.taskList}" var="itemc" indexVar="index">
+                                                                <tr class="slds-hint-parent">
+                                                                    <td>
+                                                                        <div class="slds-truncate" title="{!itemc.MBFS_OutCome__c}">{!itemc.MBFS_OutCome__c}</div>
+                                                                    </td>
+                                                                    <td>
+                                                                        <div class="slds-truncate" title="{!itemc.MBFS_Sub_Outcome__c}">{!itemc.MBFS_Sub_Outcome__c}</div>
+                                                                    </td>
+                                                                    <td>
+                                                                        <div class="slds-truncate" title="{!itemc.ActivityDate}">{!itemc.ActivityDate}</div>
+                                                                    </td>
+                                                                    <td>
+                                                                        <div class="slds-truncate" title="{!itemc.Description}">{!itemc.Description}</div>
+                                                                    </td>
+                                                                </tr>
+                                                            </aura:iteration> 
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </article>
+                                            
+                                            
+                                        </div>
+                                        
+                                    </div>
+                                </div>
+                                
+                                <div class="slds-size_1-of-1">
+                                    <div class="slds-box slds-box_x-small slds-text-align_left slds-m-around_x-small">
+                                        <div class="slds-card-wrapper">
+                                            <article class="slds-card">
+                                                <div class="slds-card__header slds-grid">
+                                                    <header class="slds-media slds-media_center slds-has-flexi-truncate">
+                                                        <div class="slds-media__figure">
+                                                            <span class="slds-icon_container slds-icon-standard-task" title="description of icon when needed">
+                                                                <lightning:icon iconName="standard:lead_list" size="medium"/>
+                                                            </span>
+                                                        </div>
+                                                        <div class="slds-media__body">
+                                                            <h2>
+                                                                <span class="slds-text-heading_small">Lead ({!v.ContractDeatilsData.leadList.length})</span>
+                                                            </h2>
+                                                        </div>
+                                                    </header>
+                                                    
+                                                </div>
+                                                <div class="slds-card__body">
+                                                    <table class="slds-table slds-table_fixed-layout slds-table_bordered slds-no-row-hover slds-table_cell-buffer">
+                                                        <thead>
+                                                            <tr class="slds-text-title_caps">
+                                                                <th scope="col">
+                                                                    <div class="slds-truncate" title="First Name"><b>First Name</b></div>
+                                                                </th>
+                                                                <th scope="col">
+                                                                    <div class="slds-truncate" title="Last Name"><b>Last Name</b></div>
+                                                                </th>
+                                                                <th scope="col">
+                                                                    <div class="slds-truncate" title="Email"><b>Email</b></div>
+                                                                </th>
+                                                                <th scope="col">
+                                                                    <div class="slds-truncate" title="Status"><b>Status </b></div>
+                                                                </th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <aura:iteration items="{!v.ContractDeatilsData.leadList}" var="itemc" indexVar="index">
+                                                                <tr class="slds-hint-parent">
+                                                                    <td>
+                                                                        <div class="slds-truncate" title="{!itemc.FirstName}">{!itemc.FirstName}</div>
+                                                                    </td>
+                                                                    <td>
+                                                                        <div class="slds-truncate" title="{!itemc.LastName}">{!itemc.LastName}</div>
+                                                                    </td>
+                                                                    <td>
+                                                                        <div class="slds-truncate" title="{!itemc.Email}">{!itemc.Email}</div>
+                                                                    </td>
+                                                                    <td>
+                                                                        <div class="slds-truncate" title="{!itemc.Status}">{!itemc.Status}</div>
+                                                                    </td>
+                                                                </tr>
+                                                            </aura:iteration> 
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </article>
+                                            
+                                            
+                                        </div>
+                                        
+                                    </div>
+                                </div>
+                                
+                                <div class="slds-size_1-of-1">
+                                    <div class="slds-box slds-box_x-small slds-text-align_left slds-m-around_x-small">
+                                        <div class="slds-card-wrapper">
+                                            <article class="slds-card">
+                                                <div class="slds-card__header slds-grid">
+                                                    <header class="slds-media slds-media_center slds-has-flexi-truncate">
+                                                        <div class="slds-media__figure">
+                                                            <span class="slds-icon_container slds-icon-standard-task" title="description of icon when needed">
+                                                                <lightning:icon iconName="standard:account" size="medium"/>
+                                                            </span>
+                                                        </div>
+                                                        <div class="slds-media__body">
+                                                            <h2>
+                                                                <span class="slds-text-heading_small">Guarantors ({!v.ContractDeatilsData.guarantorList.length})</span>
+                                                            </h2>
+                                                        </div>
+                                                    </header>
+                                                    
+                                                </div>
+                                                <div class="slds-card__body">
+                                                    <table class="slds-table slds-table_fixed-layout slds-table_bordered slds-no-row-hover slds-table_cell-buffer">
+                                                        <thead>
+                                                            <tr class="slds-text-title_caps">
+                                                                <th scope="col">
+                                                                    <div class="slds-truncate" title="Account Name"><b>Account Name</b></div>
+                                                                </th>
+                                                                <th scope="col">
+                                                                    <div class="slds-truncate" title="Mobile"><b>Mobile</b></div>
+                                                                </th>
+                                                                <th scope="col">
+                                                                    <div class="slds-truncate" title="Account Phone"><b>Account Phone</b></div>
+                                                                </th>
+                                                                <th scope="col">
+                                                                    <div class="slds-truncate" title="Email"><b>Email </b></div>
+                                                                </th>
+																 <th scope="col">
+                                                                    <div class="slds-truncate" title="Birthdate"><b>Birthdate </b></div>
+                                                                </th>
+																<th scope="col">
+                                                                    <div class="slds-truncate" title="Address"><b>Address </b></div>
+                                                                </th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <aura:iteration items="{!v.ContractDeatilsData.guarantorList}" var="itemc" indexVar="index">
+                                                                <tr class="slds-hint-parent">
+                                                                    <td>
+                                                                        <div class="slds-truncate" title="{!itemc.MBFS_Account__r.Name}">{!itemc.MBFS_Account__r.Name}</div>
+                                                                    </td>
+                                                                    <td>
+                                                                        <div class="slds-truncate" title="{!itemc.MBFS_Account__r.PersonMobilePhone}">{!itemc.MBFS_Account__r.PersonMobilePhone}</div>
+                                                                    </td>
+                                                                    <td>
+                                                                        <div class="slds-truncate" title="{!itemc.MBFS_Account__r.Phone}">{!itemc.MBFS_Account__r.Phone}</div>
+                                                                    </td>
+                                                                    <td>
+                                                                        <div class="slds-truncate" title="{!itemc.MBFS_Account__r.PersonEmail}">{!itemc.MBFS_Account__r.PersonEmail}</div>
+                                                                    </td>
+																	<td>
+                                                                        <div class="slds-truncate" title="{!itemc.MBFS_Account__r.PersonBirthdate}">{!itemc.MBFS_Account__r.PersonBirthdate}</div>
+                                                                    </td>
+																	<td>
+                                                                        <div class="slds-truncate" title="{!itemc.MBFS_Account__r.MBFS_Custom_Address__c}">{!itemc.MBFS_Account__r.MBFS_Custom_Address__c}</div>
+                                                                    </td>
+                                                                </tr>
+                                                            </aura:iteration> 
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </article>
+                                            
+                                            
+                                        </div>
+                                        
+                                    </div>
+                                </div>
+                                
+                                
+                                <div class="slds-size_1-of-1">
+                                    <div class="slds-box slds-box_x-small slds-text-align_left slds-m-around_x-small">
+                                        <div class="slds-card-wrapper">
+                                            <article class="slds-card">
+                                                <div class="slds-card__header slds-grid">
+                                                    <header class="slds-media slds-media_center slds-has-flexi-truncate">
+                                                        <div class="slds-media__figure">
+                                                            <span class="slds-icon_container slds-icon-standard-task" title="description of icon when needed">
+                                                                <lightning:icon iconName="standard:account" size="medium"/>
+                                                            </span>
+                                                        </div>
+                                                        <div class="slds-media__body">
+                                                            <h2>
+                                                                <span class="slds-text-heading_small">Insurance ({!v.ContractDeatilsData.insuranceList.length})</span>
+                                                            </h2>
+                                                        </div>
+                                                    </header>
+                                                    
+                                                </div>
+                                                <div class="slds-card__body">
+                                                    <table class="slds-table slds-table_fixed-layout slds-table_bordered slds-no-row-hover slds-table_cell-buffer">
+                                                        <thead>
+                                                            <tr class="slds-text-title_caps">
+                                                                <th scope="col">
+                                                                    <div class="slds-truncate" title="Policy Number"><b>Policy Number</b></div>
+                                                                </th>
+                                                                <th scope="col">
+                                                                    <div class="slds-truncate" title="Expiry Date"><b>Expiry Date</b></div>
+                                                                </th>
+                                                                <th scope="col">
+                                                                    <div class="slds-truncate" title="Issue Date"><b>Issue Date</b></div>
+                                                                </th>
+                                                                <th scope="col">
+                                                                    <div class="slds-truncate" title="Insured Amount"><b>Insured Amount </b></div>
+                                                                </th>
+																
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <aura:iteration items="{!v.ContractDeatilsData.insuranceList}" var="itemc" indexVar="index">
+                                                                <tr class="slds-hint-parent">
+                                                                    <td>
+                                                                        <div class="slds-truncate" title="{!itemc.Name}">{!itemc.Name}</div>
+                                                                    </td>
+                                                                    <td>
+                                                                        <div class="slds-truncate" title="{!itemc.mbfs_Expiry_Date__c}">{!itemc.mbfs_Expiry_Date__c}</div>
+                                                                    </td>
+                                                                    
+                                                                    <td>
+                                                                        <div class="slds-truncate" title="{!itemc.mbfs_Issue_Date__c}">{!itemc.mbfs_Issue_Date__c}</div>
+                                                                    </td>
+																	<td>
+                                                                        <div class="slds-truncate" title="{!itemc.mbfs_Insured_Amount__c}">
+                                                                            <ui:outputCurrency value="{!itemc.mbfs_Insured_Amount__c}"/>
+                                                                        </div>
+                                                                    </td>
+																	
+                                                                </tr>
+                                                            </aura:iteration> 
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </article>
+                                            
+                                            
+                                        </div>
+                                        
+                                    </div>
+                                </div>
+                                
+                                <div class="slds-size_1-of-1">
+                                    <div class="slds-box slds-box_x-small slds-text-align_left slds-m-around_x-small">
+                                        <div class="slds-card-wrapper">
+                                            <article class="slds-card">
+                                                <div class="slds-card__header slds-grid">
+                                                    <header class="slds-media slds-media_center slds-has-flexi-truncate">
+                                                        <div class="slds-media__figure">
+                                                            <span class="slds-icon_container slds-icon-standard-task" title="description of icon when needed">
+                                                               <img src="/resource/CustomerIntention" height="40" width="40"/>
+                                                            </span>
+                                                        </div>
+                                                        <div class="slds-media__body">
+                                                            <h2>
+                                                                <span class="slds-text-heading_small">Customer Intention ({!v.ContractDeatilsData.customerIntentionList.length})</span>
+                                                            </h2>
+                                                        </div>
+                                                    </header>
+                                                    
+                                                </div>
+                                                <div class="slds-card__body">
+                                                    <table class="slds-table slds-table_fixed-layout slds-table_bordered slds-no-row-hover slds-table_cell-buffer">
+                                                        <thead>
+                                                            <tr class="slds-text-title_caps">
+                                                                <th scope="col">
+                                                                    <div class="slds-truncate" title="Option"><b>Option</b></div>
+                                                                </th>
+                                                                <th scope="col">
+                                                                    <div class="slds-truncate" title="Sub Option"><b>Sub Option</b></div>
+                                                                </th>
+                                                                <th scope="col">
+                                                                    <div class="slds-truncate" title="Comments"><b>Comments</b></div>
+                                                                </th>
+                                                                <th scope="col">
+                                                                    <div class="slds-truncate" title="Communication Channel"><b>Communication Channel</b></div>
+                                                                </th>
+                                                                <th scope="col">
+                                                                    <div class="slds-truncate" title="Created Date"><b>Created Date</b></div>
+                                                                </th>
+																
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <aura:iteration items="{!v.ContractDeatilsData.customerIntentionList}" var="itemc" indexVar="index">
+                                                                <tr class="slds-hint-parent">
+                                                                    <td>
+                                                                        <div class="slds-truncate" title="{!itemc.MBFS_Option__c}">{!itemc.MBFS_Option__c}</div>
+                                                                    </td>
+                                                                    <td>
+                                                                        <div class="slds-truncate" title="{!itemc.MBFS_Sub_Option__c}">{!itemc.MBFS_Sub_Option__c}</div>
+                                                                    </td>
+                                                                    
+                                                                    <td>
+                                                                        <div class="slds-truncate" title="{!itemc.MBFS_Comments__c}">{!itemc.MBFS_Comments__c}</div>
+                                                                    </td>
+																	<td>
+                                                                        <div class="slds-truncate" title="{!itemc.MBFS_Communication_Channel__c}">{!itemc.MBFS_Communication_Channel__c}</div>
+                                                                    </td>
+                                                                    <td>
+                                                                        <div class="slds-truncate" title="{!itemc.CreatedDate}"> 
+                                                                           <ui:outputDate value="{!itemc.CreatedDate}"/>
+
+                                                                        </div>
+                                                                    </td>
+																	
+                                                                </tr>
+                                                            </aura:iteration> 
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </article>
+                                            
+                                            
+                                        </div>
+                                        
+                                    </div>
+                                </div>
+                                
+                            </div>
+                            
+                        </div>
+                        
+                        <div class="slds-modal__footer">    
+                            <ui:button class="btn btn-default slds-button--brand" press="{!c.onCustomerIntention }">Customer Intention</ui:button>
+                            <ui:button class="btn btn-default slds-button--brand" press="{!c.onDetailEditTask }">Add Task</ui:button>
+                            <button class="slds-button slds-button--neutral" onclick="{!c.hideModal}" >Cancel</button>          
+                        </div>
+                    </div>
+                </div>
+                <div class="slds-backdrop slds-backdrop--open" ></div>
+            </div>
+           
+            
+           
+            <div class="slds-hide" aura:id="MBFSCUSTOMERINTENTIONPopUp">                             
+                  	<c:MBFS_CustomerIntention aura:id="MBFS_CustomerIntention" cssStyle="{!v.cssStyle}"/>                   
+            </div>
+           
+            
+            
+            
+            <div class="slds-hide" aura:id="MBFSRTMNewTaskPopUp">
+                <div role="dialog" tabindex="-1" aria-labelledby="header99" class="slds-modal slds-fade-in-open ">
+                    <div class="slds-modal__container" style="max-width: 70%;width:70%;">
+                       
+                        <div class="slds-modal__header">
+                            <button class="slds-button slds-modal__close slds-button--icon-inverse" title="Close" onclick="{!c.hideModal}">
+                                X
+                                <span class="slds-assistive-text">Close</span>
+                            </button>
+                            <h2 id="header99" class="slds-text-heading--medium">
+                                New Task
+                                
+                            </h2>
+                        </div>
+                        
+                        <div class="slds-modal__content slds-p-around--medium">
+                            <div class="slds-form slds-form_compound">
+                                
+                                <fieldset class="slds-form-element"> 
+                                    <div class="slds-form-element__group">
+                                        <div class="slds-form-element__row">
+                                            <lightning:icon iconName="standard:task" size="medium"/>                                                
+                                        </div>
+                                    </div>
+                                </fieldset>
+                                
+                                <fieldset class="slds-form-element">
+                                    
+                                    <div class="slds-form-element__group">
+                                        <div class="slds-form-element__row">
+                                            <div class="slds-form-element">
+                                                
+                                                <lightning:input type="text" aura:id="taskSubject" label="Subject" name="Subject" value="{!v.NewEditTaskData.taskObj.Subject}" required="true"/>
+                                            </div>
+                                            <div class="slds-form-element"> 
+                                                <div class="slds-form-element__control">
+                                                    
+                                                    <label class="slds-form-element__label slds-no-flex" data-aura-class="uiLabel">
+                                                        <span class="required" style="color:red">* </span>
+                                                        <span class="">Due Date</span>
+                                                        
+                                                    </label> 
+                                                    <aura:if isTrue="{!v.NewEditTaskData.taskObj.Id != null}">    
+                                                        <ui:inputDate class="slds-input" aura:id="taskActivityDate" label="" value="{!v.NewEditTaskData.taskObj.ActivityDate}"  displayDatePicker="true" required="true" disabled="true"/>
+                                                        <aura:set attribute="else">
+                                                            <ui:inputDate class="slds-input" aura:id="taskActivityDate" label="" value="{!v.NewEditTaskData.taskObj.ActivityDate}"  displayDatePicker="true" required="true" disabled="true"/>
+                                                        </aura:set>
+                                                    </aura:if>
+                                                    
+                                                    
+                                                    
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                    </div>
+                                </fieldset>  
+                               
+                                <div class="slds-form-element__row">
+                                    <div class="slds-form-element">
+                                        <lightning:select name="selectItem" label="Outcome" onchange="{!c.onOutComeChange}"  value="{!v.outComeName}" required="true">                       
+                                            <option value="">Select</option>
+                                            <aura:iteration items="{!v.OutComeList}" var="item" indexVar="index"> 
+                                                <option value="{!item.key}">{!item.key}</option>                    
+                                            </aura:iteration>                     
+                                        </lightning:select> 
+                                    </div>
+                                    
+                                    <div class="slds-form-element">
+                                        <lightning:select label="Sub Outcome" onchange="{!c.onSubOutComeChange}"  value="{!v.subOutComeName}" required="true">                       
+                                            <option value="">Select</option>
+                                            <aura:iteration items="{!v.SubOutComeList}" var="item" indexVar="index">                              
+                                                <option value="{!item.value}" >{!item.value}</option>                                                    
+                                            </aura:iteration>                     
+                                        </lightning:select> 
+                                    </div>
+                                </div>
+                                <aura:if isTrue="{!v.subOutComeAction == 'WASH_LIST_NEW_LEAD'}">
+                                    <fieldset class="slds-form-element"> 
+                                        <div class="slds-form-element__group">
+                                            <div class="slds-form-element__row">
+                                                <lightning:icon iconName="action:new_lead" size="small"/>                                                
+                                            </div>
+                                        </div>
+                                    </fieldset>
+                                    
+                                    <fieldset class="slds-form-element">                                       
+                                        <div class="slds-form-element__group">
+                                            
+                                            <div class="slds-form-element__row">
+                                                
+                                                <div class="slds-form-element">                                             
+                                                    <lightning:select name="selectItem" label="Lead Type"  value="{!v.MBFS_Lead_Type_Value}" required="true" onchange="{!c.onLeadTypeChange}">                       
+                                                        <aura:iteration items="{!v.MBFS_Lead_Type}" var="item" indexVar="index"> 
+                                                            <option value="{!item}">{!item}</option>                    
+                                                        </aura:iteration>                     
+                                                    </lightning:select> 
+                                                </div> 
+                                                <div class="slds-form-element">                                             
+                                                    <lightning:select name="selectItem" label="Nature of Lead"  value="{!v.MBFS_Nature_of_Request_Value}" required="true" >                       
+                                                        <aura:iteration items="{!v.MBFS_Nature_of_Request}" var="item" indexVar="index"> 
+                                                            <option value="{!item}">{!item}</option>                    
+                                                        </aura:iteration>                     
+                                                    </lightning:select> 
+                                                </div>
+                                                
+                                                <div class="slds-form-element">                                             
+                                                    <lightning:select name="selectItem" label="Lead Source"  value="{!v.MBFS_Lead_Source_Value}" required="true" >                       
+                                                        <aura:iteration items="{!v.MBFS_Lead_Source}" var="item" indexVar="index"> 
+                                                            <option value="{!item}">{!item}</option>                    
+                                                        </aura:iteration>                     
+                                                    </lightning:select> 
+                                                </div>
+                                                
+                                            </div> 
+                                            
+                                            <div class="slds-form-element__row">
+                                                
+                                                <div class="slds-form-element">                                             
+                                                    <lightning:select name="selectItem" label="Interested vehicle category"  value="{!v.MBFS_Interested_Vehicle_category_Value}" required="true">                       
+                                                        <option value="">Select</option> 
+                                                        <aura:iteration items="{!v.MBFS_Interested_Vehicle_category}" var="item" indexVar="index"> 
+                                                            <option value="{!item}">{!item}</option>                    
+                                                        </aura:iteration>                     
+                                                    </lightning:select> 
+                                                </div> 
+                                                <div class="slds-form-element">                                             
+                                                    <lightning:select name="selectItem" label="Vehicle make interest"  value="{!v.MBFS_Vehicle_Make_interest_Value}" required="true" >                       
+                                                        <option value="">Select</option> 
+                                                        <aura:iteration items="{!v.MBFS_Vehicle_Make_interest}" var="item" indexVar="index"> 
+                                                            <option value="{!item}">{!item}</option>                    
+                                                        </aura:iteration>                     
+                                                    </lightning:select> 
+                                                </div>
+                                                <div class="slds-form-element">                                             
+                                                    <lightning:select name="selectItem" label="Vehicle model interest"  value="{!v.MBFS_Model_Interest_Value}" required="true" >                       
+                                                        <option value="">Select</option> 
+                                                        <aura:iteration items="{!v.MBFS_Model_Interest}" var="item" indexVar="index"> 
+                                                            <option value="{!item}">{!item}</option>                    
+                                                        </aura:iteration>                     
+                                                    </lightning:select> 
+                                                </div>
+                                                
+                                            </div> 
+                                            
+                                            
+                                            
+                                            <div class="slds-form-element__row">
+                                                <div class="slds-form-element">                                             
+                                                    <lightning:input type="text" aura:id="leadFirstName" label="First Name" name="First Name" value="{!v.FUTURE_LEAD.FirstName}" required="true"/>
+                                                </div>
+                                                <div class="slds-form-element">                                             
+                                                    <lightning:input type="text" aura:id="leadLastName" label="Last Name" name="Last Name" value="{!v.FUTURE_LEAD.LastName}" required="true"/>
+                                                </div>
+                                                <div class="slds-form-element">                                             
+                                                    <aura:if isTrue="{!v.MBFS_Lead_Type_Value == 'Finance Lead'}">
+                                                        <lightning:input type="email" aura:id="leadEmailName" label="Email" name="Email" value="{!v.FUTURE_LEAD.Email}" required="true"/>
+                                                        <aura:set attribute="else">
+                                                            <lightning:input type="email" aura:id="leadEmailName" label="Email" name="Email" value="{!v.FUTURE_LEAD.Email}" required="false"/>
+                                                        </aura:set>
+                                                    </aura:if> 
+                                                </div>
+                                                
+                                            </div>  
+                                            
+                                            <div class="slds-form-element__row">
+                                                
+                                                <div class="slds-form-element">                                             
+                                                    <lightning:input type="text" aura:id="leadPhoneName" label="Phone" name="Phone" value="{!v.FUTURE_LEAD.Phone}" required="false"/>
+                                                </div>
+                                                
+                                                <div class="slds-form-element">                                             
+                                                    <lightning:input type="text" label="Mobile" name="Mobile" value="{!v.FUTURE_LEAD.MobilePhone}" required="false"/>
+                                                </div>
+                                                <aura:if isTrue="{!v.MBFS_Lead_Type_Value == 'Retailer Lead'}">
+                                                    <div class="slds-form-element"> 
+                                                        <c:MBFS_NewLeadAccountLookUp accountId="{!v.FUTURE_LEAD.MBFS_Dealer_Account__c}" selectedRecord="{!v.FUTURE_LEAD.MBFS_Dealer_Account__r}"/>                                                       
+                                                    </div> 
+                                                </aura:if>     
+                                            </div>  
+                                            
+                                            
+                                            
+                                            <div class="slds-form-element__row">
+                                                
+                                                <div class="slds-form-element">
+                                                    <lightning:input type="text" aura:id="leadDescription" label="Comments" name="Comments" value="{!v.FUTURE_LEAD.Description}"/>
+                                                </div>
+                                            </div>  
+                                            
+                                            <!-- SF-74 Start -->
+                                            <aura:if isTrue="{!v.MBFS_Lead_Type_Value == 'Finance Lead'}">
+                                                <fieldset class="slds-form-element"> 
+                                                    <div class="slds-form-element__group">
+                                                        <div class="slds-form-element__row">
+                                                            <lightning:icon iconName="standard:task" size="medium"/>                                                
+                                                        </div>
+                                                    </div>
+                                                </fieldset>
+                                                
+                                                <fieldset class="slds-form-element">
+                                                    
+                                                    <div class="slds-form-element__group">
+                                                        <div class="slds-form-element__row">
+                                                            <div class="slds-form-element">
+                                                                
+                                                                <lightning:input type="text" aura:id="taskSubject" label="Subject" name="Subject" value="{!v.FINANCE_TASK.Subject}" required="true" disabled="true"/>
+                                                            </div>
+                                                            <div class="slds-form-element"> 
+                                                                <div class="slds-form-element__control">
+                                                                    
+                                                                    <label class="slds-form-element__label slds-no-flex" data-aura-class="uiLabel">
+                                                                        <span class="required" style="color:red">* </span>
+                                                                        <span class="">Due Date</span>
+                                                                        
+                                                                    </label> 
+                                                                    <ui:inputDate class="slds-input" aura:id="taskActivityDate" label="" value="{!v.FINANCE_TASK.ActivityDate}"  displayDatePicker="true" required="true" disabled="false"/>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <div class="slds-form-element__row">                            
+                                                            <div class="slds-form-element">
+                                                                <lightning:textarea name="Comment" value="{!v.FINANCE_TASK.Description}" label="Comments"  />                                            
+                                                            </div>
+                                                        </div>  
+                                                        
+                                                    </div>
+                                                </fieldset>  
+                                                
+                                            </aura:if> 
+                                            <!-- SF-74 End -->
+                                            
+                                            
+                                        </div>
+                                    </fieldset> 
+                                    
+                                </aura:if>
+                                
+                                <aura:if isTrue="{!v.subOutComeAction == 'FUTURE_TASK'}">
+                                    <fieldset class="slds-form-element">                                       
+                                        <div class="slds-form-element__group">
+                                            <div class="slds-form-element__row">
+                                                <div class="slds-form-element">
+                                                    <lightning:input type="text" aura:id="futureTaskSubject" label="Subject" name="Subject" value="{!v.FUTURE_TASK.Subject}" required="true"/>
+                                                </div>
+                                                <div class="slds-form-element">
+                                                    <label class="slds-form-element__label slds-no-flex" data-aura-class="uiLabel">
+                                                        <span class="required" style="color:red">* </span>
+                                                        <span class="">Due Date</span>
+                                                        
+                                                    </label>   
+                                                    
+                                                    <ui:inputDate class="slds-input" aura:id="futureTaskActivityDate" label="" value="{!v.FUTURE_TASK.ActivityDate}"  displayDatePicker="true" required="true"/>
+                                                    
+                                                   
+                                                </div>
+                                            </div>    
+                                            <div class="slds-form-element__row">
+                                                <div class="slds-form-element">
+                                                    <lightning:input type="text" aura:id="futureTaskDescription" label="Comments" name="Comments" value="{!v.FUTURE_TASK.Description}"/>
+                                                </div>
+                                            </div>
+                                            
+                                        </div>
+                                    </fieldset> 
+                                </aura:if>
+                                
+                                <aura:if isTrue="{!v.subOutComeAction == 'WASH_LIST_CUSTOMER_NOT_INTERESTED'}">
+                                    <fieldset class="slds-form-element">                                       
+                                        <div class="slds-form-element__group">
+                                            
+                                            <div class="slds-form-element__row">
+                                                
+                                                <div class="slds-form-element">
+                                                    <lightning:select name="selectItem" label="Customer Not Interested"  value="{!v.MBFS_Customer_Not_Interested_Value}" required="true">                       
+                                                        <aura:iteration items="{!v.MBFS_Customer_Not_Interested}" var="item" indexVar="index"> 
+                                                            <option value="{!item}">{!item}</option>                    
+                                                        </aura:iteration>                     
+                                                    </lightning:select> 
+                                                </div>
+                                            </div>
+                                           
+                                            <div class="slds-form-element__row">
+                                                <div class="slds-form-element">
+                                                    <lightning:input type="text" aura:id="futureTaskDescription" label="Comments" name="Comments" value="{!v.NewEditTaskData.taskObj.Description}"/>
+                                                </div>
+                                            </div>
+                                            
+                                        </div>
+                                    </fieldset> 
+                                </aura:if>
+                                
+                                <aura:if isTrue="{!v.subOutComeAction == 'WASH_LIST_DO_NOT_CALL_REGISTER'}">
+                                    <fieldset class="slds-form-element">                                       
+                                        <div class="slds-form-element__group">
+                                            
+                                            <div class="slds-form-element__row">                                            
+                                                <div class="slds-form-element">
+                                                    <lightning:select name="selectItem" label="Do Not Call Register"  value="{!v.MBFS_Do_Not_Call_Value}" required="true">                       
+                                                        <aura:iteration items="{!v.MBFS_Do_Not_Call}" var="item" indexVar="index"> 
+                                                            <option value="{!item}">{!item}</option>                    
+                                                        </aura:iteration>                     
+                                                    </lightning:select> 
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="slds-form-element__row">
+                                                <div class="slds-form-element">
+                                                    <lightning:input type="text" label="Comment" name="Comment" value="{!v.NewEditTaskData.taskObj.Description}"/>
+                                                </div>                                          
+                                            </div>
+                                            
+                                          
+                                        </div>
+                                    </fieldset> 
+                                </aura:if>
+                                
+                                <aura:if isTrue="{!v.subOutComeAction == 'WASH_LIST_LOST_TO_COMPETITOR'}">
+                                    <fieldset class="slds-form-element">                                       
+                                        <div class="slds-form-element__group">
+                                            
+                                            <div class="slds-form-element__row">                                            
+                                                <div class="slds-form-element">
+                                                    <lightning:select name="selectItem" label="Lost to Competitor"  value="{!v.MBFS_Lost_to_Competitor_Value}" required="true">                       
+                                                        <aura:iteration items="{!v.MBFS_Lost_to_Competitor}" var="item" indexVar="index"> 
+                                                            <option value="{!item}">{!item}</option>                    
+                                                        </aura:iteration>                     
+                                                    </lightning:select> 
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="slds-form-element__row">
+                                                <div class="slds-form-element">
+                                                    <lightning:input type="text" label="Comment" name="Comment" value="{!v.NewEditTaskData.taskObj.Description}" required="true"/>
+                                                </div>                                          
+                                            </div>
+                                            
+                                        </div>
+                                    </fieldset> 
+                                </aura:if>
+                                
+                                <aura:if isTrue="{!v.subOutComeAction == 'WASH_LIST'}">
+                                    <fieldset class="slds-form-element">                                       
+                                        <div class="slds-form-element__group">
+                                            <div class="slds-form-element__row">
+                                                <div class="slds-form-element">
+                                                    <lightning:input type="text" label="Comment" name="Comment" value="{!v.NewEditTaskData.taskObj.Description}"/>
+                                                </div>                                          
+                                            </div>
+                                            
+                                        </div>
+                                    </fieldset> 
+                                </aura:if>
+                                
+                                
+                                
+                            </div>
+                        </div>
+                       
+                        <div class="slds-modal__footer">
+                            <ui:button class="btn btn-default slds-button--brand" press="{!c.newEditTaskSubmit }">Submit</ui:button>
+							<ui:button class="slds-button slds-button--neutral" press="{!c.hideModal }">Cancel</ui:button>
+                             
+                        </div>
+                    </div>
+                </div>
+                <div class="slds-backdrop slds-backdrop--open"></div>
+            </div>                    
+        </div>	
+        <aura:set attribute="else">
+            <div class="udt-agreement slds-main-container overflow-auto" >
+                <div class="slds-text-heading_medium canvas-heading">{!$Label.c.MBFS_NoDataFound} </div>
+            </div>
+        </aura:set>
+    </aura:if>
+</aura:component>

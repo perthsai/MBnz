@@ -1,0 +1,28 @@
+<aura:component >
+    
+    <aura:attribute type="MBFS_MarkerInterface" 
+                    name="recordData" 
+                    description="Contain chart Data"/>  
+    <aura:attribute type="Boolean" 
+                    name="hasData" 
+                    default="true"/>  
+    <aura:attribute type="Integer" 
+                    name="totalCount" 
+                    default="0"/>  
+    
+    <aura:method name="recordDataList" action="{!c.drawSegmentValues}"> 
+        <aura:attribute type="MBFS_MarkerInterface" name="recordData"/>  
+        <aura:attribute type="Integer" name="totalCount"/>  
+    </aura:method>
+    
+    
+    <h1 class="slds-text-heading_medium canvas-heading"><b>Contract Summary<span style="font-size: 12px;">  ({!v.totalCount})</span></b></h1>
+    <div class="slds-hide No-Data" aura:id="noChartData"><b>{!$Label.c.MBFS_NoDataFound}</b></div> 
+    <div aura:id="showChartData">      
+        <div class="topleft"  style="float:left;">                     
+            <canvas aura:id="linechart" style="width:400px;height:180px;"></canvas>  
+            
+        </div>         
+    </div>
+    
+</aura:component>

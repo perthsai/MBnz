@@ -1,0 +1,186 @@
+<aura:component controller="MBFS_CampaignContractSegmentController" 
+                implements="flexipage:availableForAllPageTypes">
+    <ltng:require styles="/resource/SLDS/assets/styles/salesforce-lightning-design-system.min.css"/>
+	
+    <aura:attribute name="WrapperData"  type="MBFS_MarkerInterface"/>
+    <aura:attribute type="String" name="monthWeekFilterName"/> 
+    
+    <aura:method name="recordDataList" action="{!c.doInIT}"> 
+        <aura:attribute name="WrapperData"  type="MBFS_MarkerInterface"/>       
+    </aura:method>
+    
+    <aura:attribute type="String" name="campaignId"/>
+    
+    <aura:attribute type="Integer" name="pageNumber" default="1" />
+    <aura:attribute type="Integer" name="maxPage" default="0" />
+    <aura:attribute type="Integer" name="defaultRecordCount" default="10" />
+    <aura:attribute type="String" name="sortField" default="CreatedDate"/>
+    <aura:attribute type="Boolean" name="sortAsc" default="true"/>
+    
+    <aura:attribute name="PageAccountList" type="MBFS_MarkerInterface[]"/>
+    <aura:attribute name="AllAccountList"  type="MBFS_MarkerInterface[]"/> 
+    
+    
+    <aura:attribute type="Boolean" name="selectAllCheckBox" default="false"/>
+    <aura:handler name="change"  value="{!v.pageNumber}" action="{!c.renderPage}" />
+    
+ 
+    <aura:attribute type="Integer" name="defaultCount"/>   
+    <aura:attribute type="Integer" name="selectedRecordCount" default="0" />
+    <aura:attribute type="Integer" name="totalNoOfrecord" default="0"/> 
+    
+    <aura:registerEvent name="campaignEvt" type="c:MBFS_CammpaignRefresh"/>
+    
+    <aura:attribute type="Boolean" name="openToast" default="false"/>
+    <aura:attribute type="String" name="message" default=""/>
+    <aura:attribute type="Boolean" name="isError" default="false"/>
+    <aura:attribute type="Boolean" name="isSuccess" default="false"/>
+    
+    <div aura:id="CampAccspinner" id="CampAccspinner" style="display:none;">
+        <lightning:spinner variant="brand" size="large"/>
+    </div>
+    
+     <aura:if isTrue="{!v.PageAccountList.length > 0 }">
+        <div class="udt-agreement slds-main-container">
+           <section class="mainTable"> 
+            <div class="header">
+            <table class="slds-table slds-table_bordered 
+                          slds-max-medium-table_stacked-horizontal 
+                          slds-table_col-bordered 
+                          slds-box slds-box_x-small 
+                          slds-text-align_center" 
+                   style="background-color: #efefef;">
+                <thead>
+                    <tr class="slds-text-title_caps slds-is-selected">
+                        <th class="slds-cell-shrink slds-cell-wrap" scope="col" 
+                            style="background-color: #e0e2e5;">
+                            <label class="slds-checkbox">
+                                <ui:inputCheckbox click="{!c.selectAllCheckBox}" 
+                                                  value="{!v.selectAllCheckBox}" />                           
+                                <span class="slds-checkbox_faux"></span>
+                                <span class="slds-assistive-text">Select All</span>
+                            </label>               
+                        </th>
+                        <aura:iteration items="{!v.WrapperData.resultSet.columnHeader}" 
+                                        var="item" indexVar="index">                       
+                            <th scope="col" class="slds-cell-wrap" 
+                                style="background-color: #e0e2e5;cursor: pointer;">                      
+                                <div style="color: #000000;font-weight: bold;" 
+                                     id="{!item.fieldApi}" 
+                                     onclick="{!c.sortField}"
+                                     class="slds-truncate"
+                                     title="{!item.fieldLabel}">
+                                    {!item.fieldLabel} 
+                                    
+                                    <div class="slds-icon_container">
+                                        <aura:if isTrue="{!and(v.sortField == item.fieldApi, v.sortAsc == true)}">
+                                            <lightning:icon iconName="utility:arrowup" size="xx-small"/>
+                                        </aura:if>
+                                        <aura:if isTrue="{!and(v.sortField == item.fieldApi, v.sortAsc == false)}">
+                                            <lightning:icon iconName="utility:arrowdown" size="xx-small"/>
+                                        </aura:if>
+                                    </div>                      
+                                </div>     
+                            </th> 
+                        </aura:iteration>
+                    </tr>
+                </thead>
+               
+            </table>
+            </div>
+            
+            <div class="tblbody">
+                 <table class="slds-table slds-table_bordered 
+                               slds-max-medium-table_stacked-horizontal 
+                               slds-table_col-bordered 
+                               slds-box slds-box_x-small 
+                               slds-text-align_center" 
+                        style="background-color: #efefef;">
+                 <tbody>
+                    <aura:iteration items="{!v.PageAccountList}" var="itemr" indexVar="index">
+                        <tr class="slds-hint-parent" style="background-color: #ffffff;">
+                            <td class="slds-cell-shrink slds-cell-wrap" data-label="Select">
+                                <label class="slds-checkbox">
+                                    <ui:inputCheckbox change="{!c.changeCheckBox}" 
+                                                      value="{!itemr.isSelected}" 
+                                                      name="{!itemr.contractId}"/>
+                                    <span class="slds-checkbox_faux"></span>
+                                    <span class="slds-assistive-text">Select</span>
+                                </label>                           
+                            </td>                       
+                            <aura:iteration items="{!itemr.fields}" var="itemc" indexVar="index">
+                                
+                                <td data-label="{!itemc.fieldLabel}" class="slds-cell-wrap">                              
+                                    <div class="slds-truncate" title="{!itemc.fieldValue}">
+                                        {! itemc.fieldValue}
+                                    </div>
+                                </td>
+                            </aura:iteration>                       
+                        </tr>
+                    </aura:iteration>
+                    
+                </tbody>
+                </table>
+            </div>
+            </section>
+            <div class="slds-align-bottom" >
+                <div class="slds-button-group agreement-pagination " role="group">
+                    <div class="slds-size_1-of-2 slds-medium-size_1-of-12 col_2 ">
+                        <div class="slctlbl">
+                            {!v.selectedRecordCount} Selected
+                        </div>
+                    </div>
+                    <div class="slds-size_1-of-2 slds-medium-size_5-of-12 slds-text-align_right col_4">
+                        <div class="record-count align-picklist">
+                            <lightning:select name="selectItem" 
+                                              label="" 
+                                              onchange="{!c.onDefaultCountChange}" 
+                                              value="{!v.defaultCount}">
+                                <option value="25">25</option>                  
+                                <option value="50">50</option>                  
+                                <option value="100">100</option>                  
+                            </lightning:select> 
+                        </div>
+                    </div>
+                    
+                    <div class="slds-medium-size_3-of-12 col_1">
+                        <button onclick="{!c.onCampaignChange}" 
+                                class="slds-button slds-button--neutral 
+                                       assign-to save-data">
+                            Save
+                        </button>
+                    </div>  
+                   
+                    <div class="slds-medium-size_4-of-12 slds-text-align_center col_3">
+                        <div class="paginationBtns">
+                            <button onclick="{!c.firstPage}" onKeyPress="{!c.firstPage}" class="slds-button slds-button--neutral">
+                                First
+                            </button>
+                            <button onclick="{!c.prevPage}" onKeyPress="{!c.prevPage}" class="slds-button slds-button--neutral">
+                                Prev
+                            </button>
+                            <button onKeyPress="" class="slds-button slds-button--neutral">
+                                {!v.pageNumber} / {!v.maxPage} 
+                            </button>
+                            <button onclick="{!c.nextPage}" onKeyPress="{!c.nextPage}" class="slds-button slds-button--neutral">
+                                Next
+                            </button>
+                            <button onclick="{!c.lastPage}" onKeyPress="{!c.lastPage}" class="slds-button slds-button--neutral">
+                                Last
+                            </button>
+                        </div>
+                    </div>
+                </div>            
+            </div>
+                   
+            
+            
+        </div>	 
+        
+        <aura:set attribute="else">
+            <div class="udt-agreement slds-main-container overflow-auto" >
+                <div class="slds-text-heading_medium canvas-heading">{!$Label.c.MBFS_NoDataFound} </div>
+            </div>
+        </aura:set>
+    </aura:if>
+</aura:component>

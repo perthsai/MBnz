@@ -1,0 +1,56 @@
+.THIS .errorMsg
+{
+    font-size: .875rem;
+    margin-top: .5rem;
+    display: block;
+	color: rgb(194, 57, 52);
+    text-align: left;
+}
+.THIS .slds-modal__header
+{
+    background:#333;
+    color:#FFFFFF;
+}
+.THIS .slds-button--brand
+{
+    background-color: rgb(6, 8, 9);
+	color:#FFFFFF;
+}
+.THIS.cstm-process li:nth-last-child(2):after {
+    display: none;
+}
+.THIS.cstm-process li:nth-last-child(2) {
+    border-top-right-radius: 20px;
+    border-bottom-right-radius: 20px;
+}
+
+
+
+.THIS.cstm-process li:nth-last-child(1){
+    background: #ed1b2f;
+    color : #FFFFFF !important;
+}
+
+.THIS.cstm-process li:nth-last-child(1):after{
+    border-color: #ed1b2f !important;
+    
+}
+
+.THIS.cstm-process li:nth-last-child(1):before {
+    border-color: #ed1b2f;
+	border-top-left-radius: 50%;
+	border-bottom-left-radius: 50%;
+}
+.THIS.cstm-process li:hover:nth-last-child(1):before {
+    border-color: #a7162f;
+	border-top-left-radius: 50%;
+	border-bottom-left-radius: 50%;
+}
+.THIS .zeroZindex
+{
+    z-index:0;
+}
+.THIS .slds-modal__container
+{
+    margin-top:50px;
+}

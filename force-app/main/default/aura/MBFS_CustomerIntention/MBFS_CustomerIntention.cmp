@@ -1,0 +1,169 @@
+<aura:component controller="MBFS_CustomerIntentionController"
+                implements="flexipage:availableForAllPageTypes,force:appHostable,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickActionWithoutHeader" 
+                access="Global">
+    
+    <ltng:require styles="/resource/SLDS/assets/styles/salesforce-lightning-design-system.min.css"/>
+    <style>      
+        .oneAnchorHeader
+        {
+        display:none !important;
+        }      
+        .slds-brand-band:before
+        {
+        background-image:none;
+        }
+        .slds-brand-band:after
+        {
+        background-image:none;
+        }         
+        .modal-container{
+        width: 55%;
+        max-width: 100% !important;
+        }
+        .cMBFS_CustomerIntention{
+            outline:none;
+        }
+    </style>
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <aura:attribute name="recordId" type="String" default=""/>    
+    <aura:attribute name="WrapperData"  type="MBFS_CutomerIntentionMarkerInterface"/>
+    <aura:attribute type="String" name="communicationOption" default=""/>
+    
+    <aura:attribute type="String" name="optionValue" default=""/>
+    <aura:attribute type="List" name="optionList" default=""/>
+    <aura:attribute type="String" name="subOptionValue" default=""/>
+    <aura:attribute type="List" name="subOptionList" default=""/>
+    
+    <aura:attribute type="Boolean" name="openToast" default="false"/>
+    <aura:attribute type="String" name="message" default=""/>
+    <aura:attribute type="Boolean" name="isError" default="false"/>
+    <aura:attribute type="Boolean" name="isSuccess" default="false"/>
+    
+    <aura:attribute type="Boolean" name="isValiadtionFail" default="false"/>
+    
+    <aura:method name="setRecordId" action="{!c.setRecordId}"> 
+        <aura:attribute type="String" name="recordId" default=""/> 
+        <aura:attribute type="Boolean" name="isVisible"/>
+    </aura:method>
+    
+    <div aura:id="RTHSegspinner" id="RTHSegspinner" style="display:none;">
+        <lightning:spinner variant="brand" size="large"/>
+    </div>
+    
+    <c:MBFS_CustomToast open="{!v.openToast}" 
+                        Message="{!v.message}" 
+                        ShowSaveMeassage="{!v.isSuccess}" 
+                        ShowErrorMessage="{!v.isError}"/>
+    
+    
+    <aura:attribute type="Boolean" name="isVisible" default="true"/>
+    <aura:attribute type="Boolean" name="fromRTM" default="false"/>
+
+    <aura:attribute name="cssStyle" type="String" />
+    <style>{!v.cssStyle}</style>  
+    
+    <aura:renderIf isTrue="{!v.isVisible}">
+             
+        <div aura:id="MBFSCIPOPUP" role="dialog" tabindex="-1" aria-labelledby="header99" 
+             class="slds-modal slds-fade-in-open ">
+            <div class="slds-modal__container" aura:id="MBFS_Container_Width" style="padding-top:0px;">
+                <div class="slds-modal__header">
+                    <button class="slds-button slds-modal__close slds-button--icon-inverse" title="Close" onclick="{!c.hideModal}">
+                        X
+                        <span class="slds-assistive-text">Close</span>
+                    </button>
+                    
+                    <div style="text-align: left;font-size: 15px;font-weight: bold;">
+                        <img src="/resource/CustomerIntention" height="80" width="80"/>  Customer Intention 
+                    </div>
+                </div>
+                
+                <div class="slds-modal__content slds-p-around--medium">
+                    <div class="slds-form slds-form_compound">
+                        <div class="slds-form-element__row">
+                            <div class="slds-form-element" style="font-size: 13px;font-weight: bold;">
+                                Contract Type 
+                            </div>
+                            
+                            <div class="slds-form-element">
+                                <lightning:input type="text" value="{!v.WrapperData.contractType}" readonly="true"/>
+                               
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="slds-form slds-form_compound">
+                        <div class="slds-form-element__row">
+                            <div class="slds-form-element" style="font-size: 13px;font-weight: bold;">
+                                Communication Channel <span style="color: #f40000;"> * </span>
+                            </div>
+                            
+                            <div class="slds-form-element">
+                                <lightning:select label="Communication Option" value="{!v.WrapperData.customerIntentionObj.MBFS_Communication_Channel__c}" >                       
+                                    <option value="">--None--</option> 
+                                    <aura:iteration items="{!v.WrapperData.communicationChannel}" var="item" indexVar="index">                              
+                                        <option value="{!item}">{!item}</option>                                                    
+                                    </aura:iteration>                     
+                                </lightning:select> 
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="slds-form slds-form_compound">
+                        <div class="slds-form-element__row">
+                            <div class="slds-form-element" style="font-size: 13px;font-weight: bold;">
+                                Option <span style="color: #f40000;"> * </span>
+                            </div>
+                            
+                            <div class="slds-form-element">
+                                <lightning:select label="Option" onchange="{!c.onOptionChange}" value="{!v.WrapperData.customerIntentionObj.MBFS_Option__c}">                       
+                                     <option value="">--None--</option> 
+                                    <aura:iteration items="{!v.optionList}" var="item" indexVar="index">                              
+                                        <option value="{!item}" >{!item}</option>                                                    
+                                    </aura:iteration>                     
+                                </lightning:select> 
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="slds-form slds-form_compound">
+                        <div class="slds-form-element__row">
+                            <div class="slds-form-element" style="font-size: 13px;font-weight: bold;">
+                                Sub Option <span style="color: #f40000;"> * </span>
+                            </div>
+                            
+                            <div class="slds-form-element">
+                                <lightning:select label="Sub Option" value="{!v.WrapperData.customerIntentionObj.MBFS_Sub_Option__c}">                       
+                                    
+                                    <aura:iteration items="{!v.subOptionList}" var="item" indexVar="index">                              
+                                        <option value="{!item}" >{!item}</option>                                                    
+                                    </aura:iteration>                     
+                                </lightning:select> 
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="slds-form slds-form_compound">
+                        <div class="slds-form-element__row">
+                            <div class="slds-form-element" style="font-size: 13px;font-weight: bold;">
+                                Comments
+                            </div>
+                            
+                            <div class="slds-form-element">
+                                <ui:inputTextArea rows="5" value="{!v.WrapperData.customerIntentionObj.MBFS_Comments__c}"/>
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
+                <div class="slds-modal__footer">    
+                    <ui:button class="btn btn-default slds-button--brand" press="{!c.onUserIntentionSubmit }">Submit</ui:button>
+                    <ui:button class="slds-button slds-button--neutral" press="{!c.hideModal }">Cancel</ui:button>
+                              
+                </div>
+            </div>
+        </div>   
+        <div aura:id="MBFS_BACKGROUND" class="slds-backdrop slds-backdrop_open"></div>
+    </aura:renderIf>
+</aura:component>

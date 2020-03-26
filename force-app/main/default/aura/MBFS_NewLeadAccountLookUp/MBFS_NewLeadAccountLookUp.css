@@ -1,0 +1,11 @@
+.THIS .slds-icon_container, .THIS .slds-icon__container{
+    display:block;
+}
+.THIS .smallIcon{
+    width:10px;
+    height:10px;
+    fill:black;
+}
+.THIS .slds-icon-utility-search{
+    margin-top: 2px;
+}
