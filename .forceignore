@@ -8,10 +8,29 @@
 **aura
 **triggers
 **staticresources
-**/
+#pages to ignore
+**/ChangePassword.page 
+**/BandwidthExceeded.page
+**/CommunitiesLanding.page
+ **/CommunitiesLogin.page
+ **/CommunitiesSelfReg.page
+   **/Exception.page 
+   **/CommunitiesSelfRegConfirm.page
+    **/FileNotFound.page  
+    **/ForgotPassword.page
+    **/ForgotPasswordConfirm.page   
+    **/InMaintenance.page
+    **/MyProfilePage.page  
+    **/SiteLogin.page  
+    **/SiteRegister.page 
+    **/SiteRegisterConfirm.page 
+    **/SiteTemplate.page 
+    **/StdExceptionTemplate.page 
+    **/Unauthorized.page  
+    **/UnderConstruction.page   
 # LWC configuration files
 **/jsconfig.json
-**/.eslintrc.json
+**/.eslintrc.json 
 
 # LWC Jest
-**/__tests__/**  
+**/__tests__/**   
