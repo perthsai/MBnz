@@ -1,7 +1,7 @@
 <apex:page >
   <!-- Begin Default Content REMOVE THIS -->
   <h1>Congratulations</h1>
-  This is your new Page stop 
+  This is your new Page 
   <button type="button" onclick="alert('Hello world')">Click Me Today !!!</button>"   
   <!-- End Default Content REMOVE THIS -->
 </apex:page>  
