@@ -1,7 +1,7 @@
 <apex:page >
   <!-- Begin Default Content REMOVE THIS -->
   <h1>Congratulations</h1>
-  Test by selecting button updating crdentials    
+  Test by selecting button updating crdentials     
   <button type="button" onclick="alert('Hello world')">Click Me to test !!</button>"     
   <!-- End Default Content REMOVE THIS -->
 </apex:page>   
